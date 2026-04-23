@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">Plantify</string>
+    <string name="profile_name">Urban Gardener</string>
+    <string name="member_since">Member since March 2026</string>
+    <string name="stat_plants">Plants</string>
+    <string name="stat_days_active">Days Active</string>
+    <string name="stat_tasks_done">Tasks Done</string>
+    <string name="section_settings">SETTINGS</string>
+    <string name="menu_notifications">Notifications</string>
+    <string name="menu_language">Language</string>
+    <string name="menu_language_value">English</string>
+    <string name="menu_dark_mode">Dark Mode</string>
+    <string name="section_about">ABOUT</string>
+    <string name="menu_help">Help &amp; Support</string>
+    <string name="menu_about">About Plantify</string>
+    <string name="menu_about_version">v1.0.0</string>
+    <string name="promo_title">Growing Together</string>
+    <string name="promo_description">Support urban food independence by growing your own vegetables at home</string>
+    <string name="promo_learn_more">Learn more</string>
 </resources>
