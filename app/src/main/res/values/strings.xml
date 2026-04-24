@@ -17,4 +17,33 @@
     <string name="promo_title">Growing Together</string>
     <string name="promo_description">Support urban food independence by growing your own vegetables at home</string>
     <string name="promo_learn_more">Learn more</string>
+
+    <!-- Splash Screen -->
+    <string name="welcome_title">Welcome to Plantify</string>
+    <string name="welcome_description">Your personal urban farming assistant.\nTrack your plants, get smart reminders,\nand grow your own food at home.</string>
+    <string name="feature_scheduling_title">Smart Scheduling</string>
+    <string name="feature_scheduling_desc">Automated watering and fertilizing reminders</string>
+    <string name="feature_guides_title">Plant Guides</string>
+    <string name="feature_guides_desc">Simple care instructions for beginners</string>
+    <string name="feature_progress_title">Track Progress</string>
+    <string name="feature_progress_desc">Monitor your plants\' growth journey</string>
+    <string name="get_started">Get Started</string>
+
+    <!-- Home Screen -->
+    <string name="greeting">Good Morning</string>
+    <string name="my_garden">My Garden</string>
+    <string name="plant_count">3 Plants</string>
+    <string name="weather_sunny">32°C Sunny</string>
+    <string name="todays_tasks">Today\'s Tasks</string>
+    <string name="tasks_pending">3 pending</string>
+    <string name="my_plants">My Plants</string>
+    <string name="task_watering">Watering</string>
+    <string name="task_fertilizing">Fertilizing</string>
+    <string name="plant_cherry_tomato">Cherry Tomato</string>
+    <string name="plant_red_chili">Red Chili</string>
+    <string name="plant_spinach">Spinach</string>
+    <string name="days_grown">%d days grown</string>
+    <string name="next_watering">Next watering</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
 </resources>
