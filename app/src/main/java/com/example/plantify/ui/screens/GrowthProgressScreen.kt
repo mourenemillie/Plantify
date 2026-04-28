@@ -6,38 +6,51 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.plantify.ui.theme.PlantifyMediumGreen
 
 @Composable
-fun GrowthProgressScreen() {
+fun GrowthProgressScreen(onBackClick: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-
+        // Header dengan tombol back agar navigasi work
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF136A4F))
-                .padding(vertical = 20.dp, horizontal = 24.dp)
+                .background(PlantifyMediumGreen)
+                .padding(top = 48.dp, bottom = 24.dp, start = 16.dp, end = 24.dp)
         ) {
-            Text(
-                text = "Growth Progress",
-                style = TextStyle(
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+                Text(
+                    text = "Growth Progress",
+                    style = TextStyle(
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 )
-            )
+            }
         }
 
         LazyColumn(
@@ -54,7 +67,7 @@ fun GrowthProgressScreen() {
                     stages = listOf("Seed", "Sprout", "Veg", "Flower", "Fruit"),
                     currentStageIndex = 2,
                     estimateDate = "June 15, 2026",
-                    progress = 0.3f
+                    progress = 0.21f
                 )
             }
             item {
@@ -66,7 +79,7 @@ fun GrowthProgressScreen() {
                     stages = listOf("Seed", "Sprout", "Veg", "Flower", "Fruit"),
                     currentStageIndex = 2,
                     estimateDate = "July 2, 2026",
-                    progress = 0.4f
+                    progress = 0.26f
                 )
             }
             item {
@@ -78,7 +91,7 @@ fun GrowthProgressScreen() {
                     stages = listOf("Seed", "Sprout", "Veg", "Harvest"),
                     currentStageIndex = 1,
                     estimateDate = "June 4, 2026",
-                    progress = 0.25f
+                    progress = 0.18f
                 )
             }
         }
@@ -101,7 +114,8 @@ fun GrowthCard(
             .fillMaxWidth()
             .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp)),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -109,14 +123,16 @@ fun GrowthCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "$plantEmoji $plantName", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(text = "$plantEmoji $plantName", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Text(text = "Day $currentDay / $totalDays", fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
+            
+            // Timeline (Sesuai Gambar)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 stages.forEachIndexed { index, stage ->
@@ -137,8 +153,8 @@ fun GrowthCard(
                         Text(text = stage, fontSize = 10.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
                     }
                     if (index < stages.size - 1) {
-                        Divider(
-                            modifier = Modifier.width(30.dp).padding(bottom = 14.dp),
+                        HorizontalDivider(
+                            modifier = Modifier.weight(1f).padding(bottom = 14.dp),
                             color = if (index < currentStageIndex) Color(0xFF27AE60) else Color(0xFFBDC3C7),
                             thickness = 2.dp
                         )
@@ -146,30 +162,44 @@ fun GrowthCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-            Spacer(modifier = Modifier.height(12.dp))
-            Box(
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Progress Bar
+            LinearProgressIndicator(
+                progress = { progress },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)
-                    .background(Color(0xFFE0E0E0), CircleShape)
+                    .clip(CircleShape),
+                color = Color(0xFF27AE60),
+                trackColor = Color(0xFFE0E0E0)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Box Estimasi Panen (Tadinya hilang di merge kawan Anda)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp)
+                    .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.CenterStart
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(progress)
-                        .fillMaxHeight()
-                        .background(Color(0xFF27AE60), CircleShape)
-                )
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(text = "Estimated harvest", fontSize = 14.sp, color = Color.Gray)
+                    Text(text = "~$estimateDate", fontSize = 14.sp, color = Color.Gray)
+                }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedButton(
                 onClick = { /* Action */ },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF136A4F)),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF136A4F))
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = PlantifyMediumGreen),
+                border = androidx.compose.foundation.BorderStroke(1.dp, PlantifyMediumGreen)
             ) {
                 Text(text = "+ Log today's growth note", fontWeight = FontWeight.Bold)
             }
