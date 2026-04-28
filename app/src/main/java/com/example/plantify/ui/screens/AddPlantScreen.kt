@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.plantify.ui.theme.PlantifyGreen
+import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.theme.PlantifyLightGreen
 
 @Composable
@@ -30,7 +30,7 @@ fun AddPlantScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(PlantifyGreen)
+                .background(PlantifyMediumGreen)
                 .padding(24.dp)
         ) {
             Text(
@@ -101,7 +101,7 @@ fun AddPlantScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = PlantifyGreen),
+                colors = ButtonDefaults.buttonColors(containerColor = PlantifyMediumGreen),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(text = "Use AI Schedule", fontSize = 16.sp, fontWeight = FontWeight.Bold)
@@ -114,7 +114,7 @@ fun AddPlantScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = PlantifyGreen),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = PlantifyMediumGreen),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(text = "Customize manually instead", fontSize = 16.sp, fontWeight = FontWeight.Bold)
@@ -138,7 +138,7 @@ fun InputField(label: String, value: String, placeholder: String = "") {
                 unfocusedContainerColor = PlantifyLightGreen.copy(alpha = 0.3f),
                 focusedContainerColor = PlantifyLightGreen.copy(alpha = 0.3f),
                 unfocusedBorderColor = Color.LightGray,
-                focusedBorderColor = PlantifyGreen
+                focusedBorderColor = PlantifyMediumGreen
             ),
             readOnly = true
         )
