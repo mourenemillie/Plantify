@@ -2,9 +2,9 @@ package com.example.plantify.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
@@ -17,12 +17,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.example.plantify.ui.screens.*
 
 sealed class Screen(val route: String, val title: String) {
@@ -33,15 +31,13 @@ sealed class Screen(val route: String, val title: String) {
     object Alerts : Screen("alerts", "Alerts")
     object Profile : Screen("profile", "Profile")
     object AddPlant : Screen("add_plant", "Add Plant")
-    object PlantDetail : Screen("plant_detail/{plantId}", "Plant Detail") {
-        fun createRoute(plantId: String) = "plant_detail/$plantId"
-    }
     object GrowthProgress : Screen("growth_progress", "Growth Progress")
 }
 
 val items = listOf(
     Screen.Home,
     Screen.Catalog,
+    Screen.Schedule,
     Screen.Alerts,
     Screen.Profile
 )
@@ -69,7 +65,7 @@ fun PlantifyApp() {
             MainScaffold(navController) {
                 CatalogScreen(
                     onAddPlantClick = { navController.navigate(Screen.AddPlant.route) },
-                    onPlantClick = { plantId -> navController.navigate(Screen.PlantDetail.createRoute(plantId)) }
+                    onPlantClick = { /* No plant detail screen */ }
                 )
             }
         }
@@ -90,16 +86,6 @@ fun PlantifyApp() {
         }
         composable(Screen.AddPlant.route) {
             AddPlantScreen()
-        }
-        composable(
-            route = Screen.PlantDetail.route,
-            arguments = listOf(navArgument("plantId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val plantId = backStackEntry.arguments?.getString("plantId") ?: ""
-            PlantDetailScreen(
-                plantId = plantId,
-                onGrowthProgressClick = { navController.navigate(Screen.GrowthProgress.route) }
-            )
         }
         composable(Screen.GrowthProgress.route) {
             GrowthProgressScreen()
@@ -123,7 +109,8 @@ fun MainScaffold(
                         icon = {
                             val icon = when (screen) {
                                 Screen.Home -> Icons.Default.Home
-                                Screen.Catalog -> Icons.Default.List
+                                Screen.Catalog -> Icons.AutoMirrored.Filled.List
+                                Screen.Schedule -> Icons.Default.DateRange
                                 Screen.Alerts -> Icons.Default.Notifications
                                 Screen.Profile -> Icons.Default.Person
                                 else -> Icons.Default.Home
