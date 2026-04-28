@@ -43,24 +43,24 @@ fun ScheduleScreen() {
         ScheduleGroup(
             "Today, April 5",
             listOf(
-                ScheduleItem("Watering", "Cherry Tomato", "08:00 AM", Icons.Default.Info, PlantifyWaterBlue, PlantifyWaterIcon),
-                ScheduleItem("Watering", "Spinach", "08:00 AM", Icons.Default.Info, PlantifyWaterBlue, PlantifyWaterIcon),
-                ScheduleItem("Fertilizing", "Red Chili", "09:00 AM", Icons.Default.Add, PlantifyFertilizerGreen, PlantifyFertilizerIcon)
+                ScheduleItem("Watering", "Cherry Tomato", "08:00 AM", Icons.Default.Info, PlantifyIconBlue, PlantifyIconBlueBg),
+                ScheduleItem("Watering", "Spinach", "08:00 AM", Icons.Default.Info, PlantifyIconBlue, PlantifyIconBlueBg),
+                ScheduleItem("Fertilizing", "Red Chili", "09:00 AM", Icons.Default.Add, PlantifyIconGreen, PlantifyIconGreenBg)
             )
         ),
         ScheduleGroup(
             "Tomorrow, April 6",
             listOf(
-                ScheduleItem("Watering", "Cherry Tomato", "08:00 AM", Icons.Default.Info, PlantifyWaterBlue, PlantifyWaterIcon),
-                ScheduleItem("Watering", "Red Chili", "08:00 AM", Icons.Default.Info, PlantifyWaterBlue, PlantifyWaterIcon)
+                ScheduleItem("Watering", "Cherry Tomato", "08:00 AM", Icons.Default.Info, PlantifyIconBlue, PlantifyIconBlueBg),
+                ScheduleItem("Watering", "Red Chili", "08:00 AM", Icons.Default.Info, PlantifyIconBlue, PlantifyIconBlueBg)
             )
         ),
         ScheduleGroup(
             "Sunday, April 7",
             listOf(
-                ScheduleItem("Watering", "Cherry Tomato", "08:00 AM", Icons.Default.Info, PlantifyWaterBlue, PlantifyWaterIcon),
-                ScheduleItem("Watering", "Spinach", "08:00 AM", Icons.Default.Info, PlantifyWaterBlue, PlantifyWaterIcon),
-                ScheduleItem("Fertilizing", "...", "09:00 AM", Icons.Default.Add, PlantifyFertilizerGreen, PlantifyFertilizerIcon)
+                ScheduleItem("Watering", "Cherry Tomato", "08:00 AM", Icons.Default.Info, PlantifyIconBlue, PlantifyIconBlueBg),
+                ScheduleItem("Watering", "Spinach", "08:00 AM", Icons.Default.Info, PlantifyIconBlue, PlantifyIconBlueBg),
+                ScheduleItem("Fertilizing", "...", "09:00 AM", Icons.Default.Add, PlantifyIconGreen, PlantifyIconGreenBg)
             )
         )
     )

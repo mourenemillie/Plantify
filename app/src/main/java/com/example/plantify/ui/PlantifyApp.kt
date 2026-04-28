@@ -58,14 +58,13 @@ fun PlantifyApp() {
         }
         composable(Screen.Home.route) {
             MainScaffold(navController) {
-                HomeScreen()
+                HomeScreen(onPlantClick = { navController.navigate(Screen.GrowthProgress.route) })
             }
         }
         composable(Screen.Catalog.route) {
             MainScaffold(navController) {
                 CatalogScreen(
-                    onAddPlantClick = { navController.navigate(Screen.AddPlant.route) },
-                    onPlantClick = { /* No plant detail screen */ }
+                    onAddPlantClick = { navController.navigate(Screen.AddPlant.route) }
                 )
             }
         }
@@ -85,10 +84,14 @@ fun PlantifyApp() {
             }
         }
         composable(Screen.AddPlant.route) {
-            AddPlantScreen()
+            AddPlantScreen(
+                onBackClick = { navController.popBackStack() },
+                onUseAiSchedule = { navController.popBackStack() },
+                onCustomizeManually = { navController.popBackStack() }
+            )
         }
         composable(Screen.GrowthProgress.route) {
-            GrowthProgressScreen()
+            GrowthProgressScreen(onBackClick = { navController.popBackStack() })
         }
     }
 }

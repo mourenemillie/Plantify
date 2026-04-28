@@ -1,9 +1,9 @@
 package com.example.plantify.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -21,7 +21,7 @@ import com.example.plantify.R
 import com.example.plantify.ui.theme.*
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(onPlantClick: () -> Unit = {}) {
     val scrollState = rememberScrollState()
 
     Column(
@@ -55,7 +55,8 @@ fun HomeScreen() {
                 name = stringResource(R.string.plant_cherry_tomato),
                 days = 15,
                 progress = 0.85f,
-                nextWatering = stringResource(R.string.today)
+                nextWatering = stringResource(R.string.today),
+                onClick = onPlantClick
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -64,7 +65,8 @@ fun HomeScreen() {
                 name = stringResource(R.string.plant_red_chili),
                 days = 22,
                 progress = 0.92f,
-                nextWatering = stringResource(R.string.tomorrow)
+                nextWatering = stringResource(R.string.tomorrow),
+                onClick = onPlantClick
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -73,7 +75,8 @@ fun HomeScreen() {
                 name = stringResource(R.string.plant_spinach),
                 days = 8,
                 progress = 0.45f,
-                nextWatering = stringResource(R.string.today)
+                nextWatering = stringResource(R.string.today),
+                onClick = onPlantClick
             )
 
             Spacer(modifier = Modifier.height(100.dp))
@@ -269,10 +272,13 @@ private fun PlantItem(
     name: String,
     days: Int,
     progress: Float,
-    nextWatering: String
+    nextWatering: String,
+    onClick: () -> Unit = {}
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         color = Color.White,
         shadowElevation = 2.dp

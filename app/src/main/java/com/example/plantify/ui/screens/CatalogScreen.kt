@@ -18,9 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.plantify.ui.theme.PlantifyGreen
-import com.example.plantify.ui.theme.PlantifyLightGreen
-import com.example.plantify.ui.theme.PlantifyTextSecondary
+import com.example.plantify.ui.theme.PlantifyMediumGreen
+import com.example.plantify.ui.theme.PlantifyTextGray
 
 data class PlantCategory(
     val name: String,
@@ -48,51 +47,65 @@ fun CatalogScreen(
         PlantCategory("Cucumber", "Easy", Color(0xFFE8F5E9), "50-65 days", "Water daily"),
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(PlantifyGreen)
-                .padding(horizontal = 24.dp, vertical = 20.dp)
-        ) {
-            Text(
-                text = "Plant Catalog",
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Search plants...", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.LightGray,
-                    focusedBorderColor = PlantifyGreen
-                ),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 16.dp)
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddPlantClick,
+                containerColor = PlantifyMediumGreen,
+                contentColor = Color.White,
+                shape = CircleShape
             ) {
-                items(plants) { plant ->
-                    PlantItem(plant)
-                    HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                Icon(Icons.Default.Add, contentDescription = "Add Plant")
+            }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(Color.White)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(PlantifyMediumGreen)
+                    .padding(horizontal = 24.dp, vertical = 20.dp)
+            ) {
+                Text(
+                    text = "Plant Catalog",
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = {},
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Search plants...", color = Color.Gray) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = Color.LightGray,
+                        focusedBorderColor = PlantifyMediumGreen
+                    ),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 80.dp) // Extra padding for FAB
+                ) {
+                    items(plants) { plant ->
+                        PlantItem(plant, onAddPlantClick)
+                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                    }
                 }
             }
         }
@@ -100,7 +113,7 @@ fun CatalogScreen(
 }
 
 @Composable
-fun PlantItem(plant: PlantCategory) {
+fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -140,13 +153,13 @@ fun PlantItem(plant: PlantCategory) {
                 Text(
                     text = " • ${plant.duration} • ${plant.watering}",
                     fontSize = 12.sp,
-                    color = PlantifyTextSecondary
+                    color = PlantifyTextGray
                 )
             }
         }
 
         IconButton(
-            onClick = { /* TODO */ },
+            onClick = onAddClick,
             modifier = Modifier
                 .size(32.dp)
                 .border(1.dp, Color(0xFFB9F1E1), CircleShape)
