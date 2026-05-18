@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,12 +19,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.R
+import com.example.plantify.data.PlantTask
+import com.example.plantify.data.TaskType
 import com.example.plantify.ui.theme.*
+import com.example.plantify.ui.viewmodel.HomeViewModel
 
 @Composable
-fun HomeScreen(onPlantClick: () -> Unit = {}) {
+fun HomeScreen(
+    viewModel: HomeViewModel = viewModel(),
+    onPlantClick: () -> Unit = {}
+) {
     val scrollState = rememberScrollState()
+    val plants by viewModel.plants.collectAsState()
+    val tasks by viewModel.tasks.collectAsState()
 
     Column(
         modifier = Modifier
@@ -30,14 +41,14 @@ fun HomeScreen(onPlantClick: () -> Unit = {}) {
             .background(Color(0xFFF8F9FA))
             .verticalScroll(scrollState)
     ) {
-        HomeHeader()
+        HomeHeader(plantCount = plants.size)
 
         Column(
             modifier = Modifier
                 .padding(horizontal = 24.dp)
                 .offset(y = (-40).dp)
         ) {
-            TasksCard()
+            TasksCard(tasks)
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -51,33 +62,16 @@ fun HomeScreen(onPlantClick: () -> Unit = {}) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            PlantItem(
-                name = stringResource(R.string.plant_cherry_tomato),
-                days = 15,
-                progress = 0.85f,
-                nextWatering = stringResource(R.string.today),
-                onClick = onPlantClick
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PlantItem(
-                name = stringResource(R.string.plant_red_chili),
-                days = 22,
-                progress = 0.92f,
-                nextWatering = stringResource(R.string.tomorrow),
-                onClick = onPlantClick
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PlantItem(
-                name = stringResource(R.string.plant_spinach),
-                days = 8,
-                progress = 0.45f,
-                nextWatering = stringResource(R.string.today),
-                onClick = onPlantClick
-            )
+            plants.forEach { plant ->
+                PlantItem(
+                    name = plant.name,
+                    days = plant.daysGrown,
+                    progress = plant.progress,
+                    nextWatering = plant.nextWatering,
+                    onClick = onPlantClick
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             Spacer(modifier = Modifier.height(100.dp))
         }
@@ -85,7 +79,7 @@ fun HomeScreen(onPlantClick: () -> Unit = {}) {
 }
 
 @Composable
-private fun HomeHeader() {
+private fun HomeHeader(plantCount: Int) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -121,7 +115,7 @@ private fun HomeHeader() {
                     color = Color.White.copy(alpha = 0.2f)
                 ) {
                     Text(
-                        text = stringResource(R.string.plant_count),
+                        text = "$plantCount Plants",
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         color = Color.White,
                         fontSize = 12.sp,
@@ -162,7 +156,7 @@ private fun HomeHeader() {
 }
 
 @Composable
-private fun TasksCard() {
+private fun TasksCard(tasks: List<PlantTask>) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -182,7 +176,7 @@ private fun TasksCard() {
                     color = Color(0xFF1A212E)
                 )
                 Text(
-                    text = stringResource(R.string.tasks_pending),
+                    text = "${tasks.size} Pending",
                     color = Color(0xFF50D67F),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
@@ -191,36 +185,33 @@ private fun TasksCard() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TaskItem(
-                iconRes = R.drawable.ic_water_drop,
-                iconBgColor = Color(0xFFE0F2F1),
-                iconTint = Color(0xFF009688),
-                title = stringResource(R.string.task_watering),
-                subtitle = "Cherry Tomato",
-                time = "08:00 AM"
-            )
+            tasks.forEach { task ->
+                val iconRes = when (task.type) {
+                    TaskType.WATERING -> R.drawable.ic_water_drop
+                    TaskType.FERTILIZING -> R.drawable.ic_bolt
+                    else -> R.drawable.ic_book // Fallback
+                }
+                val iconBgColor = when (task.type) {
+                    TaskType.WATERING -> Color(0xFFE0F2F1)
+                    TaskType.FERTILIZING -> Color(0xFFE0F7FA)
+                    else -> Color(0xFFF1F8E9)
+                }
+                val iconTint = when (task.type) {
+                    TaskType.WATERING -> Color(0xFF009688)
+                    TaskType.FERTILIZING -> Color(0xFF00BCD4)
+                    else -> Color(0xFF4CAF50)
+                }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            TaskItem(
-                iconRes = R.drawable.ic_water_drop,
-                iconBgColor = Color(0xFFE0F2F1),
-                iconTint = Color(0xFF009688),
-                title = stringResource(R.string.task_watering),
-                subtitle = "Spinach",
-                time = "08:00 AM"
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            TaskItem(
-                iconRes = R.drawable.ic_bolt,
-                iconBgColor = Color(0xFFE0F7FA),
-                iconTint = Color(0xFF00BCD4),
-                title = stringResource(R.string.task_fertilizing),
-                subtitle = "Red Chili",
-                time = "09:00 AM"
-            )
+                TaskItem(
+                    iconRes = iconRes,
+                    iconBgColor = iconBgColor,
+                    iconTint = iconTint,
+                    title = task.title,
+                    subtitle = task.subtitle,
+                    time = task.time
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
         }
     }
 }

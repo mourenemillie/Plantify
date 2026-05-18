@@ -4,12 +4,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,16 +21,24 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.plantify.data.GrowthProgressItem
 import com.example.plantify.ui.theme.PlantifyMediumGreen
+import com.example.plantify.ui.viewmodel.GrowthProgressViewModel
 
 @Composable
-fun GrowthProgressScreen(onBackClick: () -> Unit = {}) {
+fun GrowthProgressScreen(
+    viewModel: GrowthProgressViewModel = viewModel(),
+    onBackClick: () -> Unit = {}
+) {
+    val growthItems by viewModel.growthItems.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Header dengan tombol back agar navigasi work
+        // Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -58,40 +69,16 @@ fun GrowthProgressScreen(onBackClick: () -> Unit = {}) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item {
+            items(growthItems) { item ->
                 GrowthCard(
-                    plantEmoji = "🍅",
-                    plantName = "Cherry Tomato",
-                    currentDay = 15,
-                    totalDays = 70,
-                    stages = listOf("Seed", "Sprout", "Veg", "Flower", "Fruit"),
-                    currentStageIndex = 2,
-                    estimateDate = "June 15, 2026",
-                    progress = 0.21f
-                )
-            }
-            item {
-                GrowthCard(
-                    plantEmoji = "🌶️",
-                    plantName = "Red Chili",
-                    currentDay = 22,
-                    totalDays = 85,
-                    stages = listOf("Seed", "Sprout", "Veg", "Flower", "Fruit"),
-                    currentStageIndex = 2,
-                    estimateDate = "July 2, 2026",
-                    progress = 0.26f
-                )
-            }
-            item {
-                GrowthCard(
-                    plantEmoji = "🥬",
-                    plantName = "Spinach",
-                    currentDay = 8,
-                    totalDays = 45,
-                    stages = listOf("Seed", "Sprout", "Veg", "Harvest"),
-                    currentStageIndex = 1,
-                    estimateDate = "June 4, 2026",
-                    progress = 0.18f
+                    plantEmoji = item.plantEmoji,
+                    plantName = item.plantName,
+                    currentDay = item.currentDay,
+                    totalDays = item.totalDays,
+                    stages = item.stages,
+                    currentStageIndex = item.currentStageIndex,
+                    estimateDate = item.estimateDate,
+                    progress = item.progress
                 )
             }
         }
@@ -129,7 +116,7 @@ fun GrowthCard(
 
             Spacer(modifier = Modifier.height(20.dp))
             
-            // Timeline (Sesuai Gambar)
+            // Timeline
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -177,7 +164,7 @@ fun GrowthCard(
 
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Box Estimasi Panen (Tadinya hilang di merge kawan Anda)
+            // Box Estimasi Panen
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

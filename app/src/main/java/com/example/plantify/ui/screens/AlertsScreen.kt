@@ -1,14 +1,16 @@
 package com.example.plantify.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,9 +19,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.plantify.data.AlertItem
+import com.example.plantify.ui.viewmodel.AlertsViewModel
 
 @Composable
-fun AlertsScreen() {
+fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
+    val alerts by viewModel.alerts.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -43,6 +50,7 @@ fun AlertsScreen() {
             )
             Text(
                 text = "Mark all read",
+                modifier = Modifier.clickable { viewModel.markAllAsRead() },
                 style = TextStyle(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
@@ -55,59 +63,14 @@ fun AlertsScreen() {
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 24.dp)
         ) {
-
-            item {
+            items(alerts) { alert ->
                 NotificationItem(
-                    title = "Time to water your plants",
-                    desc = "Cherry Tomato and Spinach need watering",
-                    time = "2 min ago",
-                    icon = Icons.Default.Notifications,
-                    iconBgColor = Color(0xFFE3F2FD),
-                    isUnread = true
-                )
-            }
-
-            item {
-                NotificationItem(
-                    title = "Fertilizing reminder",
-                    desc = "Red Chili needs fertilizing today",
-                    time = "1 hour ago",
-                    icon = Icons.Default.ArrowForward,
-                    iconBgColor = Color(0xFFE8F5E9),
-                    isUnread = true
-                )
-            }
-
-            item {
-                NotificationItem(
-                    title = "Plant milestone reached!",
-                    desc = "Your Spinach has grown for 1 week",
-                    time = "3 hours ago",
-                    icon = Icons.Default.Star,
-                    iconBgColor = Color(0xFFFFF3E0),
-                    isUnread = false
-                )
-            }
-
-            item {
-                NotificationItem(
-                    title = "Watering completed",
-                    desc = "Great job! You watered Basil",
-                    time = "Yesterday",
-                    icon = Icons.Default.CheckCircle,
-                    iconBgColor = Color(0xFFE3F2FD),
-                    isUnread = false
-                )
-            }
-
-            item {
-                NotificationItem(
-                    title = "Plant care tip",
-                    desc = "Tomatoes grow better with consistent watering",
-                    time = "2 days ago",
-                    icon = Icons.Default.Info,
-                    iconBgColor = Color(0xFFF5F5F5),
-                    isUnread = false
+                    title = alert.title,
+                    desc = alert.desc,
+                    time = alert.time,
+                    icon = alert.icon,
+                    iconBgColor = alert.iconBgColor,
+                    isUnread = alert.isUnread
                 )
             }
         }
@@ -135,7 +98,6 @@ fun NotificationItem(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Kotak Icon
             Box(
                 modifier = Modifier
                     .size(48.dp)
