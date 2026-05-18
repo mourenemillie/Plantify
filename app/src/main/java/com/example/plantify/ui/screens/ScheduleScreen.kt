@@ -8,62 +8,25 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.plantify.ui.theme.*
-
-data class ScheduleItem(
-    val title: String,
-    val plantName: String,
-    val time: String,
-    val icon: ImageVector,
-    val iconBgColor: Color,
-    val iconTint: Color,
-    val isDone: Boolean = false
-)
-
-data class ScheduleGroup(
-    val date: String,
-    val items: List<ScheduleItem>
-)
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.plantify.data.ScheduleGroup
+import com.example.plantify.data.ScheduleItem
+import com.example.plantify.ui.viewmodel.ScheduleViewModel
 
 @Composable
-fun ScheduleScreen() {
-    val scheduleGroups = listOf(
-        ScheduleGroup(
-            "Today, April 5",
-            listOf(
-                ScheduleItem("Watering", "Cherry Tomato", "08:00 AM", Icons.Default.Info, PlantifyIconBlue, PlantifyIconBlueBg),
-                ScheduleItem("Watering", "Spinach", "08:00 AM", Icons.Default.Info, PlantifyIconBlue, PlantifyIconBlueBg),
-                ScheduleItem("Fertilizing", "Red Chili", "09:00 AM", Icons.Default.Add, PlantifyIconGreen, PlantifyIconGreenBg)
-            )
-        ),
-        ScheduleGroup(
-            "Tomorrow, April 6",
-            listOf(
-                ScheduleItem("Watering", "Cherry Tomato", "08:00 AM", Icons.Default.Info, PlantifyIconBlue, PlantifyIconBlueBg),
-                ScheduleItem("Watering", "Red Chili", "08:00 AM", Icons.Default.Info, PlantifyIconBlue, PlantifyIconBlueBg)
-            )
-        ),
-        ScheduleGroup(
-            "Sunday, April 7",
-            listOf(
-                ScheduleItem("Watering", "Cherry Tomato", "08:00 AM", Icons.Default.Info, PlantifyIconBlue, PlantifyIconBlueBg),
-                ScheduleItem("Watering", "Spinach", "08:00 AM", Icons.Default.Info, PlantifyIconBlue, PlantifyIconBlueBg),
-                ScheduleItem("Fertilizing", "...", "09:00 AM", Icons.Default.Add, PlantifyIconGreen, PlantifyIconGreenBg)
-            )
-        )
-    )
+fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel()) {
+    val scheduleGroups by viewModel.scheduleGroups.collectAsState()
 
     Column(
         modifier = Modifier

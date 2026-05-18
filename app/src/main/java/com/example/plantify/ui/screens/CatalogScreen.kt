@@ -18,34 +18,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.plantify.data.PlantCategory
 import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.theme.PlantifyTextGray
-
-data class PlantCategory(
-    val name: String,
-    val difficulty: String,
-    val difficultyColor: Color,
-    val duration: String,
-    val watering: String,
-    val imageRes: Int = 0
-)
+import com.example.plantify.ui.viewmodel.CatalogViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CatalogScreen(
+    viewModel: CatalogViewModel = viewModel(),
     onAddPlantClick: () -> Unit = {},
     onPlantClick: (String) -> Unit = {}
 ) {
-    val plants = listOf(
-        PlantCategory("Tomato", "Easy", Color(0xFFE8F5E9), "60-80 days", "Water daily"),
-        PlantCategory("Red Chili", "Medium", Color(0xFFFFF3E0), "70-90 days", "Water 2x/day"),
-        PlantCategory("Spinach", "Easy", Color(0xFFE8F5E9), "40-50 days", "Water daily"),
-        PlantCategory("Mustard Greens", "Easy", Color(0xFFE8F5E9), "30-40 days", "Water daily"),
-        PlantCategory("Lettuce", "Easy", Color(0xFFE8F5E9), "45-55 days", "Water 2x/day"),
-        PlantCategory("Green Onion", "Very easy", Color(0xFFE8F5E9), "60-80 days", "Water daily"),
-        PlantCategory("Bell Pepper", "Medium", Color(0xFFFFF3E0), "70-85 days", "Water 2x/day"),
-        PlantCategory("Cucumber", "Easy", Color(0xFFE8F5E9), "50-65 days", "Water daily"),
-    )
+    val plants by viewModel.plants.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     Scaffold(
         floatingActionButton = {
@@ -83,8 +70,8 @@ fun CatalogScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
+                    value = searchQuery,
+                    onValueChange = { viewModel.onSearchQueryChanged(it) },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("Search plants...", color = Color.Gray) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },

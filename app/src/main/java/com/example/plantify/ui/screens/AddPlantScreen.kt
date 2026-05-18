@@ -13,15 +13,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.theme.PlantifyLightGreen
+import com.example.plantify.ui.viewmodel.AddPlantViewModel
 
 @Composable
 fun AddPlantScreen(
+    viewModel: AddPlantViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onUseAiSchedule: () -> Unit = {},
     onCustomizeManually: () -> Unit = {}
 ) {
+    val selectedPlant by viewModel.selectedPlant.collectAsState()
+    val plantingDate by viewModel.plantingDate.collectAsState()
+    val location by viewModel.location.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -52,11 +59,17 @@ fun AddPlantScreen(
                 .padding(24.dp)
                 .fillMaxWidth()
         ) {
-            InputField(label = "Select plant", value = "Tomato (60-80 days)")
+            InputField(label = "Select plant", value = selectedPlant)
             Spacer(modifier = Modifier.height(16.dp))
-            InputField(label = "Planting date", value = "April 20, 2026")
+            InputField(label = "Planting date", value = plantingDate)
             Spacer(modifier = Modifier.height(16.dp))
-            InputField(label = "Location / pot name", value = "", placeholder = "e.g. Balcony pot #1")
+            InputField(
+                label = "Location / pot name",
+                value = location,
+                onValueChange = { viewModel.updateLocation(it) },
+                placeholder = "e.g. Balcony pot #1",
+                readOnly = false
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -124,13 +137,19 @@ fun AddPlantScreen(
 }
 
 @Composable
-fun InputField(label: String, value: String, placeholder: String = "") {
+fun InputField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit = {},
+    placeholder: String = "",
+    readOnly: Boolean = true
+) {
     Column {
         Text(text = label, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = value,
-            onValueChange = {},
+            onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text(text = placeholder, color = Color.Gray) },
             shape = RoundedCornerShape(12.dp),
@@ -140,7 +159,7 @@ fun InputField(label: String, value: String, placeholder: String = "") {
                 unfocusedBorderColor = Color.LightGray,
                 focusedBorderColor = PlantifyMediumGreen
             ),
-            readOnly = true
+            readOnly = readOnly
         )
     }
 }

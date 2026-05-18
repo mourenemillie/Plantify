@@ -19,12 +19,22 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.R
 import com.example.plantify.ui.theme.*
+import com.example.plantify.ui.viewmodel.ProfileViewModel
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
+fun ProfileScreen(
+    modifier: Modifier = Modifier,
+    viewModel: ProfileViewModel = viewModel()
+) {
     val scrollState = rememberScrollState()
+    
+    val plantsCount by viewModel.plantsCount.collectAsState()
+    val daysActive by viewModel.daysActive.collectAsState()
+    val tasksDone by viewModel.tasksDone.collectAsState()
+    val isDarkMode by viewModel.isDarkMode.collectAsState()
 
     Column(
         modifier = modifier
@@ -39,12 +49,12 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
                 .padding(horizontal = 24.dp)
                 .offset(y = (-40).dp)
         ) {
-            StatsCard()
+            StatsCard(plantsCount, daysActive, tasksDone)
 
             Spacer(modifier = Modifier.height(24.dp))
 
             SectionTitle(title = stringResource(R.string.section_settings))
-            SettingsSection()
+            SettingsSection(isDarkMode, onDarkModeChange = { viewModel.toggleDarkMode(it) })
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -108,7 +118,7 @@ private fun ProfileHeader() {
 }
 
 @Composable
-private fun StatsCard() {
+private fun StatsCard(plantsCount: Int, daysActive: Int, tasksDone: Int) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -120,11 +130,11 @@ private fun StatsCard() {
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            StatItem(value = "3", label = stringResource(R.string.stat_plants))
+            StatItem(value = plantsCount.toString(), label = stringResource(R.string.stat_plants))
             VerticalDivider(modifier = Modifier.height(40.dp), color = Color(0xFFF1F1F1))
-            StatItem(value = "15", label = stringResource(R.string.stat_days_active))
+            StatItem(value = daysActive.toString(), label = stringResource(R.string.stat_days_active))
             VerticalDivider(modifier = Modifier.height(40.dp), color = Color(0xFFF1F1F1))
-            StatItem(value = "24", label = stringResource(R.string.stat_tasks_done))
+            StatItem(value = tasksDone.toString(), label = stringResource(R.string.stat_tasks_done))
         }
     }
 }
@@ -160,7 +170,7 @@ private fun SectionTitle(title: String) {
 }
 
 @Composable
-private fun SettingsSection() {
+private fun SettingsSection(isDarkMode: Boolean, onDarkModeChange: (Boolean) -> Unit) {
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = Color.White
@@ -181,7 +191,7 @@ private fun SettingsSection() {
                 iconTint = PlantifyIconOrange
             )
             HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F1F1))
-            DarkModeToggle()
+            DarkModeToggle(isDarkMode, onDarkModeChange)
         }
     }
 }
@@ -263,8 +273,7 @@ private fun ProfileMenuItem(
 }
 
 @Composable
-private fun DarkModeToggle() {
-    var isDark by remember { mutableStateOf(false) }
+private fun DarkModeToggle(isDark: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -293,7 +302,7 @@ private fun DarkModeToggle() {
         )
         Switch(
             checked = isDark,
-            onCheckedChange = { isDark = it },
+            onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
                 checkedTrackColor = PlantifyMediumGreen
