@@ -2,6 +2,7 @@ package com.example.plantify.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -113,7 +115,15 @@ fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit) {
                 .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "🌱", fontSize = 24.sp)
+            if (plant.imageRes != 0) {
+                Image(
+                    painter = painterResource(id = plant.imageRes),
+                    contentDescription = plant.name,
+                    modifier = Modifier.size(36.dp)
+                )
+            } else {
+                Text(text = "🌱", fontSize = 24.sp)
+            }
         }
 
         Spacer(modifier = Modifier.width(16.dp))
