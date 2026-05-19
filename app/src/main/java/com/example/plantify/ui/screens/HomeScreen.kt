@@ -29,7 +29,7 @@ import com.example.plantify.ui.viewmodel.HomeViewModel
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
-    onPlantClick: () -> Unit = {}
+    onPlantClick: (String) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val plants by viewModel.plants.collectAsState()
@@ -68,7 +68,7 @@ fun HomeScreen(
                     days = plant.daysGrown,
                     progress = plant.progress,
                     nextWatering = plant.nextWatering,
-                    onClick = onPlantClick
+                    onClick = { onPlantClick(plant.id) }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -110,17 +110,31 @@ private fun HomeHeader(plantCount: Int) {
                     )
                 }
 
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = Color.White.copy(alpha = 0.2f)
-                ) {
-                    Text(
-                        text = "$plantCount Plants",
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Notification Icon
+                    IconButton(onClick = { /* notif action */ }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_notifications),
+                            contentDescription = "Notifications",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = Color.White.copy(alpha = 0.2f)
+                    ) {
+                        Text(
+                            text = "$plantCount Plants",
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
 
@@ -139,7 +153,7 @@ private fun HomeHeader(plantCount: Int) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_wb_sunny),
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = PlantifySunnyYellow,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -189,22 +203,16 @@ private fun TasksCard(tasks: List<PlantTask>) {
                 val iconRes = when (task.type) {
                     TaskType.WATERING -> R.drawable.ic_water_drop
                     TaskType.FERTILIZING -> R.drawable.ic_bolt
-                    else -> R.drawable.ic_book // Fallback
-                }
-                val iconBgColor = when (task.type) {
-                    TaskType.WATERING -> Color(0xFFE0F2F1)
-                    TaskType.FERTILIZING -> Color(0xFFE0F7FA)
-                    else -> Color(0xFFF1F8E9)
+                    else -> R.drawable.ic_book
                 }
                 val iconTint = when (task.type) {
-                    TaskType.WATERING -> Color(0xFF009688)
-                    TaskType.FERTILIZING -> Color(0xFF00BCD4)
-                    else -> Color(0xFF4CAF50)
+                    TaskType.WATERING -> PlantifyWaterTeal
+                    TaskType.FERTILIZING -> PlantifyFertilizerAmber
+                    else -> PlantifyIconGreen
                 }
 
                 TaskItem(
                     iconRes = iconRes,
-                    iconBgColor = iconBgColor,
                     iconTint = iconTint,
                     title = task.title,
                     subtitle = task.subtitle,
@@ -219,7 +227,6 @@ private fun TasksCard(tasks: List<PlantTask>) {
 @Composable
 private fun TaskItem(
     iconRes: Int,
-    iconBgColor: Color,
     iconTint: Color,
     title: String,
     subtitle: String,
@@ -264,7 +271,7 @@ private fun PlantItem(
     days: Int,
     progress: Float,
     nextWatering: String,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit
 ) {
     Surface(
         modifier = Modifier
@@ -286,9 +293,9 @@ private fun PlantItem(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_book),
+                            painter = painterResource(id = R.drawable.ic_eco),
                             contentDescription = null,
-                            tint = Color(0xFF4CAF50),
+                            tint = PlantifyMediumGreen,
                             modifier = Modifier.size(28.dp)
                         )
                     }
@@ -307,7 +314,7 @@ private fun PlantItem(
                         text = nextWatering,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
-                        color = Color(0xFF4CAF50)
+                        color = PlantifyMediumGreen
                     )
                 }
             }
@@ -320,7 +327,7 @@ private fun PlantItem(
                     modifier = Modifier
                         .weight(1f)
                         .height(8.dp),
-                    color = Color(0xFF1F6F5F),
+                    color = PlantifyDarkGreen,
                     trackColor = Color(0xFFEEEEEE),
                     strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
                 )

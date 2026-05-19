@@ -1,5 +1,6 @@
 package com.example.plantify.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -34,22 +35,11 @@ fun SplashScreen(onTimeout: () -> Unit) {
             Spacer(modifier = Modifier.height(60.dp))
 
             // App Logo
-            Surface(
-                modifier = Modifier
-                    .size(120.dp)
-                    .shadow(10.dp, RoundedCornerShape(24.dp)),
-                shape = RoundedCornerShape(24.dp),
-                color = PlantifyMediumGreen
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_leaf_logo),
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(60.dp)
-                    )
-                }
-            }
+            Image(
+                painter = painterResource(id = R.drawable.plantify_logo),
+                contentDescription = "Plantify Logo",
+                modifier = Modifier.size(150.dp)
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 

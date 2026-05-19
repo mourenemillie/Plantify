@@ -2,6 +2,7 @@ package com.example.plantify.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,18 +11,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.data.ScheduleGroup
 import com.example.plantify.data.ScheduleItem
+import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.viewmodel.ScheduleViewModel
 
 @Composable
@@ -33,28 +34,37 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel()) {
             .fillMaxSize()
             .background(Color.White)
     ) {
-        Text(
-            text = "Care Schedule",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(24.dp),
-            color = Color(0xFF001F3F)
-        )
+        // Header sama kayak screen lain
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(PlantifyMediumGreen)
+                .padding(horizontal = 24.dp, vertical = 20.dp)
+        ) {
+            Text(
+                text = "Care Schedule",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 16.dp, top = 0.dp),
+            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 16.dp, top = 16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             items(scheduleGroups) { group ->
-                ScheduleSection(group)
+                ScheduleSection(group, onToggle = { item ->
+                    viewModel.toggleDone(item)
+                })
             }
         }
     }
 }
 
 @Composable
-fun ScheduleSection(group: ScheduleGroup) {
+fun ScheduleSection(group: ScheduleGroup, onToggle: (ScheduleItem) -> Unit) {
     Column {
         Text(
             text = group.date,
@@ -64,14 +74,14 @@ fun ScheduleSection(group: ScheduleGroup) {
             modifier = Modifier.padding(bottom = 12.dp)
         )
         group.items.forEach { item ->
-            ScheduleCard(item)
+            ScheduleCard(item, onToggle = { onToggle(item) })
             Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
 
 @Composable
-fun ScheduleCard(item: ScheduleItem) {
+fun ScheduleCard(item: ScheduleItem, onToggle: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -86,14 +96,27 @@ fun ScheduleCard(item: ScheduleItem) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Clickable circle checkbox
             Box(
                 modifier = Modifier
                     .size(24.dp)
-                    .border(1.dp, Color.LightGray, CircleShape),
+                    .then(
+                        if (item.isDone) {
+                            Modifier.background(PlantifyMediumGreen, CircleShape)
+                        } else {
+                            Modifier.border(2.dp, Color.LightGray, CircleShape)
+                        }
+                    )
+                    .clickable { onToggle() },
                 contentAlignment = Alignment.Center
             ) {
                 if (item.isDone) {
-                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Green)
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = Color.White
+                    )
                 }
             }
 
@@ -106,7 +129,7 @@ fun ScheduleCard(item: ScheduleItem) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = item.icon,
+                    painter = painterResource(id = item.iconRes),
                     contentDescription = null,
                     tint = item.iconTint,
                     modifier = Modifier.size(20.dp)
