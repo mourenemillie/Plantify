@@ -109,7 +109,7 @@ class ScheduleViewModel : ViewModel() {
         _scheduleGroups.value = _scheduleGroups.value.map { group ->
             group.copy(
                 items = group.items.map {
-                    if (it == item) {
+                    if (it === item) { // Ubah di sini jadi ===
                         it.copy(isDone = !it.isDone)
                     } else {
                         it

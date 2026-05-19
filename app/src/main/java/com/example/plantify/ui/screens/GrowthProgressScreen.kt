@@ -43,7 +43,7 @@ fun GrowthProgressScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(PlantifyMediumGreen)
-                .padding(top = 48.dp, bottom = 24.dp, start = 16.dp, end = 24.dp)
+                .padding(top = 16.dp, bottom = 16.dp, start = 8.dp, end = 16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onBackClick) {
@@ -115,7 +115,7 @@ fun GrowthCard(
             }
 
             Spacer(modifier = Modifier.height(20.dp))
-            
+
             // Timeline
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -150,7 +150,7 @@ fun GrowthCard(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             // Progress Bar
             LinearProgressIndicator(
                 progress = { progress },
@@ -163,7 +163,7 @@ fun GrowthCard(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Box Estimasi Panen
             Box(
                 modifier = Modifier

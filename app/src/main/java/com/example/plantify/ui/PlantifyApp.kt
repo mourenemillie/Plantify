@@ -123,8 +123,9 @@ fun PlantifyApp() {
             }
             composable(Screen.Home.route) {
                 HomeScreen(
-                    onPlantClick = { plantId ->
-                        navController.navigate(Screen.PlantDetail.createRoute(plantId))
+                    onPlantClick = {
+                        // Langsung diarahkan ke rute GrowthProgress
+                        navController.navigate(Screen.GrowthProgress.route)
                     }
                 )
             }
