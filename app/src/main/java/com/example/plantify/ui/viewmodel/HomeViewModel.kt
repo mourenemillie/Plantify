@@ -28,21 +28,24 @@ class HomeViewModel : ViewModel() {
                 name = "Cherry Tomato",
                 daysGrown = 15,
                 progress = 0.85f,
-                nextWatering = "Today"
+                nextWatering = "Today",
+                imageUrl = "https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=200&h=200&fit=crop"
             ),
             Plant(
                 id = UUID.randomUUID().toString(),
                 name = "Red Chili",
                 daysGrown = 22,
                 progress = 0.92f,
-                nextWatering = "Tomorrow"
+                nextWatering = "Tomorrow",
+                imageUrl = "https://images.unsplash.com/photo-1588252303782-cb80119abd6e?w=200&h=200&fit=crop"
             ),
             Plant(
                 id = UUID.randomUUID().toString(),
                 name = "Spinach",
                 daysGrown = 8,
                 progress = 0.45f,
-                nextWatering = "Today"
+                nextWatering = "Today",
+                imageUrl = "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=200&h=200&fit=crop"
             )
         )
 

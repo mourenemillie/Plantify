@@ -5,7 +5,8 @@ data class Plant(
     val name: String,
     val daysGrown: Int,
     val progress: Float,
-    val nextWatering: String
+    val nextWatering: String,
+    val imageUrl: String = ""
 )
 
 data class PlantTask(
@@ -42,7 +43,7 @@ data class ScheduleItem(
     val title: String,
     val plantName: String,
     val time: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val iconRes: Int,
     val iconBgColor: androidx.compose.ui.graphics.Color,
     val iconTint: androidx.compose.ui.graphics.Color,
     val isDone: Boolean = false

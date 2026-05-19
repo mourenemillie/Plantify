@@ -214,8 +214,8 @@ private fun AboutSection() {
                 iconRes = R.drawable.ic_info,
                 title = stringResource(R.string.menu_about),
                 value = stringResource(R.string.menu_about_version),
-                iconBgColor = Color(0xFFF3E5F5),
-                iconTint = Color(0xFF9C27B0)
+                iconBgColor = PlantifyPurpleBg,
+                iconTint = PlantifyPurple
             )
         }
     }
@@ -283,13 +283,13 @@ private fun DarkModeToggle(isDark: Boolean, onCheckedChange: (Boolean) -> Unit) 
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(Color(0xFFE8EAF6), RoundedCornerShape(10.dp)),
+                .background(PlantifyIndigoBg, RoundedCornerShape(10.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_dark_mode),
                 contentDescription = null,
-                tint = Color(0xFF3F51B5),
+                tint = PlantifyIndigo,
                 modifier = Modifier.size(20.dp)
             )
         }
