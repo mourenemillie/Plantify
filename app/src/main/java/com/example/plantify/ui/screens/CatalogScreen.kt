@@ -1,7 +1,7 @@
 package com.example.plantify.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +15,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -37,12 +39,14 @@ fun CatalogScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
 
     Scaffold(
+        containerColor = Color(0xFFF8F9FA),
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddPlantClick,
                 containerColor = PlantifyMediumGreen,
                 contentColor = Color.White,
-                shape = CircleShape
+                shape = CircleShape,
+                elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Plant")
             }
@@ -52,48 +56,68 @@ fun CatalogScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color.White)
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(PlantifyMediumGreen)
-                    .padding(horizontal = 24.dp, vertical = 20.dp)
+                    .background(
+                        color = PlantifyMediumGreen,
+                        shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                    )
+                    .padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 40.dp)
             ) {
-                Text(
-                    text = "Plant Catalog",
-                    color = Color.White,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Column {
+                    Text(
+                        text = "Discover",
+                        color = Color.White.copy(alpha = 0.8f),
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = "Plant Catalog",
+                        color = Color.White,
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
             }
 
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Spacer(modifier = Modifier.height(16.dp))
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+            ) {
+                // Modern Search Bar
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White,
+                    shadowElevation = 8.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextField(
+                        value = searchQuery,
+                        onValueChange = { viewModel.onSearchQueryChanged(it) },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Search plants...", color = Color.Gray, fontSize = 15.sp) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = PlantifyMediumGreen) },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            cursorColor = PlantifyMediumGreen
+                        ),
+                        singleLine = true
+                    )
+                }
 
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { viewModel.onSearchQueryChanged(it) },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Search plants...", color = Color.Gray) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color.LightGray,
-                        focusedBorderColor = PlantifyMediumGreen
-                    ),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 80.dp) // Extra padding for FAB
+                    contentPadding = PaddingValues(bottom = 80.dp), // Extra padding for FAB
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(plants) { plant ->
-                        PlantItem(plant, onAddPlantClick)
-                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                        PlantItem(plant, onAddClick = onAddPlantClick, onItemClick = { onPlantClick(plant.name) })
                     }
                 }
             }
@@ -102,71 +126,86 @@ fun CatalogScreen(
 }
 
 @Composable
-fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit) {
-    Row(
+fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> Unit) {
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .clickable { onItemClick() },
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White,
+        shadowElevation = 4.dp
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .size(48.dp)
-                .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (plant.imageRes != 0) {
-                Image(
-                    painter = painterResource(id = plant.imageRes),
-                    contentDescription = plant.name,
-                    modifier = Modifier.size(36.dp)
-                )
-            } else {
-                Text(text = "🌱", fontSize = 24.sp)
+            // Image Container with soft background
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFFF1F8E9)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (plant.imageRes != 0) {
+                    Image(
+                        painter = painterResource(id = plant.imageRes),
+                        contentDescription = plant.name,
+                        modifier = Modifier.size(40.dp)
+                    )
+                } else {
+                    Text(text = "🌱", fontSize = 28.sp)
+                }
             }
-        }
 
-        Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = plant.name,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(
-                    color = plant.difficultyColor,
-                    shape = RoundedCornerShape(4.dp)
-                ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = plant.name,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color(0xFF1A212E)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        color = plant.difficultyColor.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(6.dp)
+                    ) {
+                        Text(
+                            text = plant.difficulty,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            fontSize = 11.sp,
+                            color = plant.difficultyColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = plant.difficulty,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                        fontSize = 11.sp,
-                        color = if (plant.difficulty == "Medium") Color(0xFFE65100) else Color(0xFF2E7D32),
+                        text = "${plant.duration} • ${plant.watering}",
+                        fontSize = 12.sp,
+                        color = PlantifyTextGray,
                         fontWeight = FontWeight.Medium
                     )
                 }
-                Text(
-                    text = " • ${plant.duration} • ${plant.watering}",
-                    fontSize = 12.sp,
-                    color = PlantifyTextGray
+            }
+
+            IconButton(
+                onClick = onAddClick,
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(PlantifyMediumGreen, CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
                 )
             }
-        }
-
-        IconButton(
-            onClick = onAddClick,
-            modifier = Modifier
-                .size(32.dp)
-                .border(1.dp, Color(0xFFB9F1E1), CircleShape)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add",
-                tint = Color(0xFF0D674E),
-                modifier = Modifier.size(20.dp)
-            )
         }
     }
 }

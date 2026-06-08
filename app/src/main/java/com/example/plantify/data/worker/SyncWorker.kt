@@ -13,7 +13,8 @@ class SyncWorker(
 
     override suspend fun doWork(): Result {
         val database = PlantDatabase.getDatabase(applicationContext)
-        val repository = PlantRepository(database.plantDao())
+        val aiService = com.example.plantify.data.remote.AiService()
+        val repository = PlantRepository(database.plantDao(), aiService)
 
         return try {
             repository.syncWithSupabase()

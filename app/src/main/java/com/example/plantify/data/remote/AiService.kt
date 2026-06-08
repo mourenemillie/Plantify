@@ -1,15 +1,14 @@
 package com.example.plantify.data.remote
 
+import com.example.plantify.BuildConfig
 import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.content
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 
 class AiService {
     private val generativeModel = GenerativeModel(
         modelName = "gemini-1.5-flash",
-        apiKey = "AIzaSyAAaP8h_W3NkT-JDeXPPHotSIxmOY1v5DA"
+        apiKey = BuildConfig.GEMINI_API_KEY
     )
 
     suspend fun generateCareSchedule(plantName: String, condition: String): String? = withContext(Dispatchers.IO) {
@@ -19,13 +18,19 @@ class AiService {
             {
               "tasks": [
                 {
-                  "type": "Watering" or "Fertilizing" or "Pruning",
-                  "time": "HH:mm",
+                  "type": "Watering",
+                  "time": "08:00",
+                  "description": "Short description"
+                },
+                {
+                  "type": "Fertilizing",
+                  "time": "09:00",
                   "description": "Short description"
                 }
               ]
             }
-            Only return the JSON.
+            Valid types are: "Watering", "Fertilizing", "Pruning".
+            Only return the raw JSON string. No markdown tags.
         """.trimIndent()
 
         try {
