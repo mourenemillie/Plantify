@@ -64,3 +64,8 @@ data class GrowthProgressItem(
     val estimateDate: String,
     val progress: Float
 )
+
+data class GrowthNote(
+    val date: String,
+    val note: String
+)
