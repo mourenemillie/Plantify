@@ -47,7 +47,8 @@ data class ScheduleItem(
     val iconRes: Int,
     val iconBgColor: androidx.compose.ui.graphics.Color,
     val iconTint: androidx.compose.ui.graphics.Color,
-    val isDone: Boolean = false
+    val isDone: Boolean = false,
+    val entity: com.example.plantify.data.local.entity.TaskScheduleEntity? = null
 )
 
 data class ScheduleGroup(
