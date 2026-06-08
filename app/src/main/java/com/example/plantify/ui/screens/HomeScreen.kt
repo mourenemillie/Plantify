@@ -1,5 +1,6 @@
 package com.example.plantify.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -68,6 +69,7 @@ fun HomeScreen(
                     days = plant.daysGrown,
                     progress = plant.progress,
                     nextWatering = plant.nextWatering,
+                    imageRes = plant.imageRes,
                     onClick = { onPlantClick(plant.id) }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -271,6 +273,7 @@ private fun PlantItem(
     days: Int,
     progress: Float,
     nextWatering: String,
+    imageRes: Int,
     onClick: () -> Unit
 ) {
     Surface(
@@ -289,15 +292,23 @@ private fun PlantItem(
                 Surface(
                     modifier = Modifier.size(56.dp),
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFE8F5E9)
+                    color = Color(0xFFF5F5F5)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_eco),
-                            contentDescription = null,
-                            tint = PlantifyMediumGreen,
-                            modifier = Modifier.size(28.dp)
-                        )
+                        if (imageRes != 0) {
+                            Image(
+                                painter = painterResource(id = imageRes),
+                                contentDescription = name,
+                                modifier = Modifier.size(36.dp)
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_eco),
+                                contentDescription = null,
+                                tint = PlantifyMediumGreen,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
                     }
                 }
 

@@ -2,6 +2,7 @@ package com.example.plantify.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.plantify.R
 import com.example.plantify.data.Plant
 import com.example.plantify.data.PlantTask
 import com.example.plantify.data.TaskType
@@ -14,7 +15,6 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import com.example.plantify.R
 
 class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() {
 
