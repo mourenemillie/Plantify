@@ -6,7 +6,8 @@ data class Plant(
     val daysGrown: Int,
     val progress: Float,
     val nextWatering: String,
-    val imageUrl: String = ""
+    val imageUrl: String = "",
+    val imageRes: Int = 0
 )
 
 data class PlantTask(
