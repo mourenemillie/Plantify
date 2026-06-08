@@ -30,7 +30,8 @@ import com.example.plantify.ui.viewmodel.HomeViewModel
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
-    onPlantClick: (String) -> Unit = {}
+    onPlantClick: (String) -> Unit = {},
+    onNotificationClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val plants by viewModel.plants.collectAsState()
@@ -42,7 +43,10 @@ fun HomeScreen(
             .background(Color(0xFFF8F9FA))
             .verticalScroll(scrollState)
     ) {
-        HomeHeader(plantCount = plants.size)
+        HomeHeader(
+            plantCount = plants.size,
+            onNotificationClick = onNotificationClick
+        )
 
         Column(
             modifier = Modifier
@@ -81,7 +85,10 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeHeader(plantCount: Int) {
+private fun HomeHeader(
+    plantCount: Int,
+    onNotificationClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -114,7 +121,7 @@ private fun HomeHeader(plantCount: Int) {
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // Notification Icon
-                    IconButton(onClick = { /* notif action */ }) {
+                    IconButton(onClick = onNotificationClick) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_notifications),
                             contentDescription = "Notifications",

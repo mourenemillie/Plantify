@@ -44,6 +44,7 @@ sealed class Screen(val route: String, val title: String, val iconRes: Int = 0) 
         fun createRoute(plantId: String) = "plant_detail/$plantId"
     }
     object GrowthProgress : Screen("growth_progress", "Growth Progress")
+    object Alerts : Screen("alerts", "Alerts")
 }
 
 @Composable
@@ -126,6 +127,9 @@ fun PlantifyApp() {
                     onPlantClick = {
                         // Langsung diarahkan ke rute GrowthProgress
                         navController.navigate(Screen.GrowthProgress.route)
+                    },
+                    onNotificationClick = {
+                        navController.navigate(Screen.Alerts.route)
                     }
                 )
             }
@@ -159,6 +163,9 @@ fun PlantifyApp() {
             }
             composable(Screen.GrowthProgress.route) {
                 GrowthProgressScreen()
+            }
+            composable(Screen.Alerts.route) {
+                AlertsScreen()
             }
         }
     }
