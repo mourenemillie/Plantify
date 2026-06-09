@@ -7,10 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import com.example.plantify.ui.PlantifyApp
 import com.example.plantify.ui.theme.PlantifyTheme
 
-//perlu diingat! file utama hanya untuk navigasi!
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
             PlantifyTheme {
