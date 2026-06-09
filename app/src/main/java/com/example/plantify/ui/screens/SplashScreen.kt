@@ -1,8 +1,11 @@
 package com.example.plantify.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,99 +25,111 @@ import com.example.plantify.ui.theme.PlantifyTheme
 
 @Composable
 fun SplashScreen(onTimeout: () -> Unit) {
+    val scrollState = rememberScrollState()
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.White
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(60.dp))
-
-            // App Logo
-            Image(
-                painter = painterResource(id = R.drawable.plantify_logo),
-                contentDescription = "Plantify Logo",
-                modifier = Modifier.size(150.dp)
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Text(
-                text = stringResource(R.string.welcome_title),
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A212E)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = stringResource(R.string.welcome_description),
-                fontSize = 16.sp,
-                color = Color.Gray,
-                textAlign = TextAlign.Center,
-                lineHeight = 24.sp,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            // Feature List
+        Box(modifier = Modifier.fillMaxSize()) {
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                OnboardingFeature(
-                    iconRes = R.drawable.ic_calendar,
-                    iconBgColor = Color(0xFFE8F5E9),
-                    iconTint = Color(0xFF4CAF50),
-                    title = stringResource(R.string.feature_scheduling_title),
-                    description = stringResource(R.string.feature_scheduling_desc)
-                )
-
-                OnboardingFeature(
-                    iconRes = R.drawable.ic_book,
-                    iconBgColor = Color(0xFFE3F2FD),
-                    iconTint = Color(0xFF2196F3),
-                    title = stringResource(R.string.feature_guides_title),
-                    description = stringResource(R.string.feature_guides_desc)
-                )
-
-                OnboardingFeature(
-                    iconRes = R.drawable.ic_trending_up_chart,
-                    iconBgColor = Color(0xFFFFF3E0),
-                    iconTint = Color(0xFFFF9800),
-                    title = stringResource(R.string.feature_progress_title),
-                    description = stringResource(R.string.feature_progress_desc)
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Button(
-                onClick = onTimeout,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .shadow(8.dp, RoundedCornerShape(16.dp)),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF50D67F) // Matching the bright green in the image
-                )
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp)
+                    .verticalScroll(scrollState),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = stringResource(R.string.get_started),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                Spacer(modifier = Modifier.height(60.dp))
+
+                // App Logo
+                Image(
+                    painter = painterResource(id = R.drawable.plantify_logo),
+                    contentDescription = "Plantify Logo",
+                    modifier = Modifier.size(150.dp)
                 )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Text(
+                    text = stringResource(R.string.welcome_title),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1A212E),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = stringResource(R.string.welcome_description),
+                    fontSize = 16.sp,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 24.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+
+                Spacer(modifier = Modifier.height(48.dp))
+
+                // Feature List
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    OnboardingFeature(
+                        iconRes = R.drawable.ic_calendar,
+                        iconBgColor = Color(0xFFE8F5E9),
+                        iconTint = Color(0xFF4CAF50),
+                        title = stringResource(R.string.feature_scheduling_title),
+                        description = stringResource(R.string.feature_scheduling_desc)
+                    )
+
+                    OnboardingFeature(
+                        iconRes = R.drawable.ic_book,
+                        iconBgColor = Color(0xFFE3F2FD),
+                        iconTint = Color(0xFF2196F3),
+                        title = stringResource(R.string.feature_guides_title),
+                        description = stringResource(R.string.feature_guides_desc)
+                    )
+
+                    OnboardingFeature(
+                        iconRes = R.drawable.ic_trending_up_chart,
+                        iconBgColor = Color(0xFFFFF3E0),
+                        iconTint = Color(0xFFFF9800),
+                        title = stringResource(R.string.feature_progress_title),
+                        description = stringResource(R.string.feature_progress_desc)
+                    )
+                }
+
+                // Extra space for the button at the bottom
+                Spacer(modifier = Modifier.height(120.dp))
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            // Button at the bottom
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(Color.White.copy(alpha = 0.9f))
+                    .padding(24.dp)
+            ) {
+                Button(
+                    onClick = onTimeout,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF50D67F)
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.get_started),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
         }
     }
 }

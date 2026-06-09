@@ -13,8 +13,14 @@ interface PlantDao {
     @Query("SELECT * FROM tanaman_katalog")
     fun getAllCatalog(): Flow<List<PlantCatalogEntity>>
 
+    @Query("SELECT * FROM tanaman_katalog WHERE id_tanaman = :id")
+    suspend fun getCatalogById(id: Int): PlantCatalogEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCatalog(catalog: List<PlantCatalogEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSingleCatalog(plant: PlantCatalogEntity)
 
     // My Plants
     @Query("SELECT * FROM kebunku")

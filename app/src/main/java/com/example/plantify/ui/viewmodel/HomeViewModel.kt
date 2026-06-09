@@ -1,76 +1,58 @@
 package com.example.plantify.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.plantify.data.Plant
-import com.example.plantify.data.PlantTask
-import com.example.plantify.data.TaskType
+import androidx.lifecycle.viewModelScope
+import com.example.plantify.data.local.entity.MyPlantEntity
+import com.example.plantify.data.local.entity.TaskScheduleEntity
+import com.example.plantify.data.remote.WeatherService
+import com.example.plantify.data.repository.PlantRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.UUID
+import kotlinx.coroutines.launch
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(
+    private val repository: PlantRepository,
+    private val weatherService: WeatherService = WeatherService()
+) : ViewModel() {
 
-    private val _plants = MutableStateFlow<List<Plant>>(emptyList())
-    val plants: StateFlow<List<Plant>> = _plants.asStateFlow()
+    private val _myPlants = MutableStateFlow<List<MyPlantEntity>>(emptyList())
+    val myPlants: StateFlow<List<MyPlantEntity>> = _myPlants.asStateFlow()
 
-    private val _tasks = MutableStateFlow<List<PlantTask>>(emptyList())
-    val tasks: StateFlow<List<PlantTask>> = _tasks.asStateFlow()
+    private val _tasks = MutableStateFlow<List<TaskScheduleEntity>>(emptyList())
+    val tasks: StateFlow<List<TaskScheduleEntity>> = _tasks.asStateFlow()
+
+    private val _currentWeather = MutableStateFlow("Fetching weather...")
+    val currentWeather: StateFlow<String> = _currentWeather.asStateFlow()
 
     init {
-        loadMockData()
+        loadData()
     }
 
-    private fun loadMockData() {
-        _plants.value = listOf(
-            Plant(
-                id = UUID.randomUUID().toString(),
-                name = "Cherry Tomato",
-                daysGrown = 15,
-                progress = 0.85f,
-                nextWatering = "Today",
-                imageUrl = "https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=200&h=200&fit=crop"
-            ),
-            Plant(
-                id = UUID.randomUUID().toString(),
-                name = "Red Chili",
-                daysGrown = 22,
-                progress = 0.92f,
-                nextWatering = "Tomorrow",
-                imageUrl = "https://images.unsplash.com/photo-1588252303782-cb80119abd6e?w=200&h=200&fit=crop"
-            ),
-            Plant(
-                id = UUID.randomUUID().toString(),
-                name = "Spinach",
-                daysGrown = 8,
-                progress = 0.45f,
-                nextWatering = "Today",
-                imageUrl = "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=200&h=200&fit=crop"
-            )
-        )
-
-        _tasks.value = listOf(
-            PlantTask(
-                id = UUID.randomUUID().toString(),
-                title = "Watering",
-                subtitle = "Cherry Tomato",
-                time = "08:00 AM",
-                type = TaskType.WATERING
-            ),
-            PlantTask(
-                id = UUID.randomUUID().toString(),
-                title = "Watering",
-                subtitle = "Spinach",
-                time = "08:00 AM",
-                type = TaskType.WATERING
-            ),
-            PlantTask(
-                id = UUID.randomUUID().toString(),
-                title = "Fertilizing",
-                subtitle = "Red Chili",
-                time = "09:00 AM",
-                type = TaskType.FERTILIZING
-            )
-        )
+    private fun loadData() {
+        viewModelScope.launch {
+            repository.myPlants.collect {
+                _myPlants.value = it
+                // Logic to fetch weather for the first plant's location
+                // In a real app, you might want a default location or user location
+            }
+        }
+        viewModelScope.launch {
+            repository.allSchedules.collect {
+                _tasks.value = it
+            }
+        }
+        viewModelScope.launch {
+            repository.syncWithSupabase()
+        }
+        // Fetch weather for a default location or based on plants
+        viewModelScope.launch {
+            val weather = weatherService.getCurrentWeather("32.73.20.1001") // Sample code
+            if (weather != null) {
+                _currentWeather.value = weather
+            } else {
+                _currentWeather.value = "Sunny, 28°C" // Fallback dummy but tracked
+            }
+        }
     }
 }

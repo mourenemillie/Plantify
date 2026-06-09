@@ -31,6 +31,8 @@ fun ProfileScreen(
 ) {
     val scrollState = rememberScrollState()
     
+    val userName by viewModel.userName.collectAsState()
+    val memberSince by viewModel.memberSince.collectAsState()
     val plantsCount by viewModel.plantsCount.collectAsState()
     val daysActive by viewModel.daysActive.collectAsState()
     val tasksDone by viewModel.tasksDone.collectAsState()
@@ -42,7 +44,7 @@ fun ProfileScreen(
             .background(Color(0xFFF8F9FA))
             .verticalScroll(scrollState)
     ) {
-        ProfileHeader()
+        ProfileHeader(userName, memberSince)
 
         Column(
             modifier = Modifier
@@ -71,7 +73,7 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun ProfileHeader() {
+private fun ProfileHeader(userName: String, memberSince: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -101,14 +103,14 @@ private fun ProfileHeader() {
 
             Column {
                 Text(
-                    text = stringResource(R.string.profile_name),
+                    text = userName,
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 )
                 Text(
-                    text = stringResource(R.string.member_since),
+                    text = memberSince,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.8f)
                 )

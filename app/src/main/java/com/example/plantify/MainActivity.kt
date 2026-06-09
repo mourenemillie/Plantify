@@ -3,19 +3,40 @@ package com.example.plantify
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import androidx.work.*
+import com.example.plantify.data.worker.SyncWorker
 import com.example.plantify.ui.PlantifyApp
 import com.example.plantify.ui.theme.PlantifyTheme
+import java.util.concurrent.TimeUnit
 
 //perlu diingat! file utama hanya untuk navigasi!
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        setupSyncWorker()
+
         setContent {
             PlantifyTheme {
                 PlantifyApp()
             }
         }
+    }
+
+    private fun setupSyncWorker() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val syncRequest = PeriodicWorkRequestBuilder<SyncWorker>(1, TimeUnit.HOURS)
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "SupabaseSync",
+            ExistingPeriodicWorkPolicy.KEEP,
+            syncRequest
+        )
     }
 }

@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.R
-import com.example.plantify.data.PlantTask
-import com.example.plantify.data.TaskType
+import com.example.plantify.data.local.entity.MyPlantEntity
+import com.example.plantify.data.local.entity.TaskScheduleEntity
 import com.example.plantify.ui.theme.*
 import com.example.plantify.ui.viewmodel.HomeViewModel
 
@@ -32,8 +32,9 @@ fun HomeScreen(
     onPlantClick: (String) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
-    val plants by viewModel.plants.collectAsState()
+    val plants by viewModel.myPlants.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
+    val weather by viewModel.currentWeather.collectAsState()
 
     Column(
         modifier = Modifier
@@ -41,7 +42,7 @@ fun HomeScreen(
             .background(Color(0xFFF8F9FA))
             .verticalScroll(scrollState)
     ) {
-        HomeHeader(plantCount = plants.size)
+        HomeHeader(plantCount = plants.size, weather = weather)
 
         Column(
             modifier = Modifier
@@ -64,11 +65,11 @@ fun HomeScreen(
 
             plants.forEach { plant ->
                 PlantItem(
-                    name = plant.name,
-                    days = plant.daysGrown,
-                    progress = plant.progress,
-                    nextWatering = plant.nextWatering,
-                    onClick = { onPlantClick(plant.id) }
+                    name = plant.nama_pot ?: "Plant",
+                    days = 0, // Should be calculated
+                    progress = plant.progress_persen / 100f,
+                    nextWatering = plant.next_watering ?: "N/A",
+                    onClick = { onPlantClick(plant.id_kebun.toString()) }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -79,7 +80,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeHeader(plantCount: Int) {
+private fun HomeHeader(plantCount: Int, weather: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -158,7 +159,7 @@ private fun HomeHeader(plantCount: Int) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.weather_sunny),
+                        text = weather,
                         color = Color.White,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
@@ -170,7 +171,7 @@ private fun HomeHeader(plantCount: Int) {
 }
 
 @Composable
-private fun TasksCard(tasks: List<PlantTask>) {
+private fun TasksCard(tasks: List<TaskScheduleEntity>) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -200,23 +201,23 @@ private fun TasksCard(tasks: List<PlantTask>) {
             Spacer(modifier = Modifier.height(16.dp))
 
             tasks.forEach { task ->
-                val iconRes = when (task.type) {
-                    TaskType.WATERING -> R.drawable.ic_water_drop
-                    TaskType.FERTILIZING -> R.drawable.ic_bolt
+                val iconRes = when (task.jenis_tugas) {
+                    "Watering" -> R.drawable.ic_water_drop
+                    "Fertilizing" -> R.drawable.ic_bolt
                     else -> R.drawable.ic_book
                 }
-                val iconTint = when (task.type) {
-                    TaskType.WATERING -> PlantifyWaterTeal
-                    TaskType.FERTILIZING -> PlantifyFertilizerAmber
+                val iconTint = when (task.jenis_tugas) {
+                    "Watering" -> PlantifyWaterTeal
+                    "Fertilizing" -> PlantifyFertilizerAmber
                     else -> PlantifyIconGreen
                 }
 
                 TaskItem(
                     iconRes = iconRes,
                     iconTint = iconTint,
-                    title = task.title,
-                    subtitle = task.subtitle,
-                    time = task.time
+                    title = task.jenis_tugas,
+                    subtitle = "Plant ID: ${task.id_kebun}",
+                    time = task.waktu_eksekusi
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }

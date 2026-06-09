@@ -1,5 +1,7 @@
 package com.example.plantify.data.remote
 
+import com.example.plantify.BuildConfig
+import android.util.Log
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import kotlinx.coroutines.Dispatchers
@@ -9,19 +11,24 @@ import org.json.JSONObject
 class AiService {
     private val generativeModel = GenerativeModel(
         modelName = "gemini-1.5-flash",
-        apiKey = "AIzaSyAAaP8h_W3NkT-JDeXPPHotSIxmOY1v5DA"
+        apiKey = BuildConfig.GEMINI_API_KEY
     )
 
-    suspend fun generateCareSchedule(plantName: String, condition: String): String? = withContext(Dispatchers.IO) {
+    suspend fun generateCareSchedule(plantName: String, condition: String, weatherContext: String? = null): String? = withContext(Dispatchers.IO) {
+        val weatherInfo = if (weatherContext != null) "The current weather in the user's location is: $weatherContext." else ""
         val prompt = """
-            Create a care schedule for a plant named '$plantName' in this condition: '$condition'.
+            $weatherInfo
+            Create a detailed care schedule for a plant named '$plantName' in this condition: '$condition'.
+            Consider the current weather if provided to adjust watering frequency or special care.
+            
             Provide the output in JSON format with the following structure:
             {
+              "recommendation_text": "A brief summary of why these tasks were chosen based on the plant and weather",
               "tasks": [
                 {
                   "type": "Watering" or "Fertilizing" or "Pruning",
                   "time": "HH:mm",
-                  "description": "Short description"
+                  "description": "Short instruction"
                 }
               ]
             }
@@ -30,9 +37,18 @@ class AiService {
 
         try {
             val response = generativeModel.generateContent(prompt)
-            return@withContext response.text
+            var cleanText = response.text ?: return@withContext null
+            
+            // Handle markdown code blocks if the AI includes them
+            if (cleanText.contains("```json")) {
+                cleanText = cleanText.substringAfter("```json").substringBefore("```").trim()
+            } else if (cleanText.contains("```")) {
+                cleanText = cleanText.substringAfter("```").substringBeforeLast("```").trim()
+            }
+            
+            return@withContext cleanText
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("AiService", "Error generating care schedule", e)
             null
         }
     }
