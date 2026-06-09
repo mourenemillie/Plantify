@@ -2,6 +2,7 @@ package com.example.plantify.data.remote
 
 import com.example.plantify.data.remote.model.BmkgWeatherResponse
 import com.example.plantify.data.remote.model.NominatimResponse
+import com.example.plantify.data.remote.model.NominatimSearchResponse
 import com.example.plantify.data.remote.model.WilayahResponse
 import retrofit2.http.GET
 import retrofit2.http.Headers
@@ -30,6 +31,14 @@ interface NominatimApiService {
         @Query("lat") lat: Double,
         @Query("lon") lon: Double
     ): NominatimResponse
+
+    @Headers("User-Agent: PlantifyApp/1.0")
+    @GET("search")
+    suspend fun searchGeocode(
+        @Query("q") address: String,
+        @Query("format") format: String = "json",
+        @Query("limit") limit: Int = 1
+    ): List<NominatimSearchResponse>
 }
 
 interface BmkgApiService {

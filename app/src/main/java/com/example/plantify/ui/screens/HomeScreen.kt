@@ -1,5 +1,10 @@
 package com.example.plantify.ui.screens
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,35 +14,81 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.R
 import com.example.plantify.data.PlantTask
 import com.example.plantify.data.TaskType
 import com.example.plantify.ui.theme.*
 import com.example.plantify.ui.viewmodel.HomeViewModel
+import com.example.plantify.ui.viewmodel.LocationViewModel
 import com.example.plantify.ui.viewmodel.ViewModelFactory
-import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(factory = ViewModelFactory(LocalContext.current)),
+    locationViewModel: LocationViewModel = viewModel(factory = ViewModelFactory(LocalContext.current)),
     onPlantClick: (String) -> Unit = {},
     onNotificationClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     val scrollState = rememberScrollState()
     val plants by viewModel.plants.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
+    val weatherCondition by locationViewModel.weatherCondition.collectAsState()
+
+    // 1. Inisialisasi FusedLocationClient untuk akses GPS
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    // 2. Launcher untuk meminta izin GPS kepada user
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val coarseGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+
+        if (fineGranted || coarseGranted) {
+            // Jika diizinkan, panggil fungsi GPS akurasi tinggi
+            fetchHighAccuracyLocation(context, fusedLocationClient, locationViewModel)
+        } else {
+            locationViewModel.updateLocationManually("Izin Lokasi Ditolak")
+        }
+    }
+
+    // 3. Cek izin otomatis saat layar pertama kali dibuka
+    LaunchedEffect(Unit) {
+        val hasFineLocation = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasFineLocation) {
+            fetchHighAccuracyLocation(context, fusedLocationClient, locationViewModel)
+        } else {
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -47,6 +98,7 @@ fun HomeScreen(
     ) {
         HomeHeader(
             plantCount = plants.size,
+            weatherText = weatherCondition ?: "Mendeteksi Lokasi...",
             onNotificationClick = onNotificationClick
         )
 
@@ -86,9 +138,30 @@ fun HomeScreen(
     }
 }
 
+@SuppressLint("MissingPermission")
+private fun fetchHighAccuracyLocation(
+    context: android.content.Context,
+    fusedLocationClient: com.google.android.gms.location.FusedLocationProviderClient,
+    locationViewModel: LocationViewModel
+) {
+    fusedLocationClient.getCurrentLocation(
+        Priority.PRIORITY_HIGH_ACCURACY,
+        CancellationTokenSource().token
+    ).addOnSuccessListener { location ->
+        if (location != null) {
+            locationViewModel.fetchLocationAndWeather(location.latitude, location.longitude)
+        } else {
+            locationViewModel.updateLocationManually("Gagal mendeteksi lokasi")
+        }
+    }.addOnFailureListener {
+        locationViewModel.updateLocationManually("Error GPS")
+    }
+}
+
 @Composable
 private fun HomeHeader(
     plantCount: Int,
+    weatherText: String,
     onNotificationClick: () -> Unit
 ) {
     Box(
@@ -167,9 +240,9 @@ private fun HomeHeader(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.weather_sunny),
+                        text = weatherText,
                         color = Color.White,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }

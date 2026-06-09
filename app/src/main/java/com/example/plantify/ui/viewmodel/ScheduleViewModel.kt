@@ -29,21 +29,22 @@ class ScheduleViewModel(private val repository: PlantRepository) : ViewModel() {
             val items = schedules.map { entity ->
                 val plantName = plants.find { it.id_kebun == entity.id_kebun }?.nama_pot ?: "Unknown Plant"
                 
-                val iconRes = when (entity.jenis_tugas) {
-                    "Watering" -> R.drawable.ic_water_drop
-                    "Fertilizing" -> R.drawable.ic_bolt
+                val iconRes = when (entity.jenis_tugas.lowercase()) {
+                    "watering", "penyiraman" -> R.drawable.ic_water_drop
+                    "fertilizing", "pemupukan" -> R.drawable.ic_bolt
+                    "harvesting", "pemanenan", "panen" -> R.drawable.ic_trending_up_chart
                     else -> R.drawable.ic_book
                 }
 
-                val tint = when (entity.jenis_tugas) {
-                    "Watering" -> PlantifyWaterTeal
-                    "Fertilizing" -> PlantifyFertilizerAmber
+                val tint = when (entity.jenis_tugas.lowercase()) {
+                    "watering", "penyiraman" -> PlantifyWaterTeal
+                    "fertilizing", "pemupukan" -> PlantifyFertilizerAmber
                     else -> PlantifyIconGreen
                 }
 
-                val bg = when (entity.jenis_tugas) {
-                    "Watering" -> PlantifyWaterTealBg
-                    "Fertilizing" -> PlantifyFertilizerAmberBg
+                val bg = when (entity.jenis_tugas.lowercase()) {
+                    "watering", "penyiraman" -> PlantifyWaterTealBg
+                    "fertilizing", "pemupukan" -> PlantifyFertilizerAmberBg
                     else -> PlantifyIconGreenBg
                 }
 

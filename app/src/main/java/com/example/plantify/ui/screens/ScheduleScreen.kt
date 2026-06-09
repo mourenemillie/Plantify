@@ -53,15 +53,40 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel(factory = ViewModelF
             )
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 16.dp, top = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            items(scheduleGroups) { group ->
-                ScheduleSection(group, onToggle = { item ->
-                    viewModel.toggleDone(item)
-                })
+        if (scheduleGroups.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("📅", fontSize = 64.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "No schedules yet!",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Add a plant from the Catalog tab\nto generate a care schedule.",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 16.dp, top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                items(scheduleGroups) { group ->
+                    ScheduleSection(group, onToggle = { item ->
+                        viewModel.toggleDone(item)
+                    })
+                }
             }
         }
     }

@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,7 +33,11 @@ import com.example.plantify.ui.screens.ProfileScreen
 import com.example.plantify.ui.screens.AddPlantScreen
 import com.example.plantify.ui.screens.PlantDetailScreen
 import com.example.plantify.ui.screens.GrowthProgressScreen
+import com.example.plantify.ui.viewmodel.HomeViewModel
+import com.example.plantify.ui.viewmodel.LocationViewModel
 import com.example.plantify.ui.viewmodel.ProfileViewModel
+import com.example.plantify.ui.viewmodel.ViewModelFactory
+import androidx.compose.ui.platform.LocalContext
 
 sealed class Screen(val route: String, val title: String, val iconRes: Int = 0) {
     object Splash : Screen("splash", "Splash")
@@ -40,7 +46,9 @@ sealed class Screen(val route: String, val title: String, val iconRes: Int = 0) 
     object Schedule : Screen("schedule", "Schedule", R.drawable.ic_nav_schedule)
     object Growth : Screen("growth", "Growth", R.drawable.ic_nav_growth)
     object Profile : Screen("profile", "Profile", R.drawable.ic_nav_profile)
-    object AddPlant : Screen("add_plant", "Add Plant")
+    object AddPlant : Screen("add_plant?plantName={plantName}", "Add Plant") {
+        fun createRoute(plantName: String) = "add_plant?plantName=$plantName"
+    }
     object PlantDetail : Screen("plant_detail/{plantId}", "Plant Detail") {
         fun createRoute(plantId: String) = "plant_detail/$plantId"
     }
@@ -53,6 +61,18 @@ fun PlantifyApp(profileViewModel: ProfileViewModel = viewModel()) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val context = LocalContext.current
+    val factory = ViewModelFactory(context)
+
+    // Shared ViewModels
+    val homeViewModel: HomeViewModel = viewModel(factory = factory)
+    val locationViewModel: LocationViewModel = viewModel(factory = factory)
+
+    // Feed live weather from LocationViewModel into HomeViewModel
+    val weatherCondition by locationViewModel.weatherCondition.collectAsState()
+    LaunchedEffect(weatherCondition) {
+        weatherCondition?.let { homeViewModel.updateWeather(it) }
+    }
 
     val bottomNavItems = listOf(
         Screen.Home,
@@ -125,8 +145,9 @@ fun PlantifyApp(profileViewModel: ProfileViewModel = viewModel()) {
             }
             composable(Screen.Home.route) {
                 HomeScreen(
-                    onPlantClick = {
-                        navController.navigate(Screen.GrowthProgress.route)
+                    viewModel = homeViewModel,
+                    onPlantClick = { plantId ->
+                        navController.navigate(Screen.PlantDetail.createRoute(plantId))
                     },
                     onNotificationClick = {
                         navController.navigate(Screen.Alerts.route)
@@ -135,7 +156,13 @@ fun PlantifyApp(profileViewModel: ProfileViewModel = viewModel()) {
             }
             composable(Screen.Catalog.route) {
                 CatalogScreen(
-                    onAddPlantClick = { navController.navigate(Screen.AddPlant.route) },
+                    onAddPlantClick = { plantName -> 
+                        if (plantName != null) {
+                            navController.navigate(Screen.AddPlant.createRoute(plantName))
+                        } else {
+                            navController.navigate("add_plant?plantName=")
+                        }
+                    },
                     onPlantClick = { plantId -> navController.navigate(Screen.PlantDetail.createRoute(plantId)) }
                 )
             }
@@ -143,7 +170,9 @@ fun PlantifyApp(profileViewModel: ProfileViewModel = viewModel()) {
                 ScheduleScreen()
             }
             composable(Screen.Growth.route) {
-                GrowthProgressScreen()
+                GrowthProgressScreen(
+                    onBackClick = { navController.popBackStack() }
+                )
             }
             composable(Screen.Profile.route) {
                 ProfileScreen(
@@ -153,8 +182,19 @@ fun PlantifyApp(profileViewModel: ProfileViewModel = viewModel()) {
                     }
                 )
             }
-            composable(Screen.AddPlant.route) {
-                AddPlantScreen()
+            composable(
+                route = Screen.AddPlant.route,
+                arguments = listOf(navArgument("plantName") { 
+                    type = NavType.StringType
+                    nullable = true
+                })
+            ) { backStackEntry ->
+                val plantName = backStackEntry.arguments?.getString("plantName")
+                AddPlantScreen(
+                    plantName = plantName,
+                    onBackClick = { navController.popBackStack() },
+                    onPlantSaved = { navController.popBackStack() }
+                )
             }
             composable(
                 route = Screen.PlantDetail.route,
@@ -163,14 +203,19 @@ fun PlantifyApp(profileViewModel: ProfileViewModel = viewModel()) {
                 val plantId = backStackEntry.arguments?.getString("plantId") ?: ""
                 PlantDetailScreen(
                     plantId = plantId,
+                    onBackClick = { navController.popBackStack() },
                     onGrowthProgressClick = { navController.navigate(Screen.GrowthProgress.route) }
                 )
             }
             composable(Screen.GrowthProgress.route) {
-                GrowthProgressScreen()
+                GrowthProgressScreen(
+                    onBackClick = { navController.popBackStack() }
+                )
             }
             composable(Screen.Alerts.route) {
-                AlertsScreen()
+                AlertsScreen(
+                    onBackClick = { navController.popBackStack() }
+                )
             }
         }
     }

@@ -1,13 +1,13 @@
 package com.example.plantify.ui.viewmodel
 
-import com.example.plantify.BuildConfig
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.plantify.data.local.entity.MyPlantEntity
-import com.example.plantify.data.remote.AiService
-import com.example.plantify.data.repository.PlantRepository
+import com.example.plantify.BuildConfig
 import com.example.plantify.data.PlantEntry
 import com.example.plantify.data.PlantRepository
+import com.example.plantify.data.repository.PlantRepository as RoomPlantRepository
+import com.example.plantify.data.local.entity.MyPlantEntity
+import com.example.plantify.data.local.entity.TaskScheduleEntity
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,30 +15,16 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
-class AddPlantViewModel(private val plantRepository: PlantRepository) : ViewModel() {
-
-    private val aiService = AiService()
-import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.OutputStreamWriter
 import java.net.URL
+import java.text.SimpleDateFormat
+import java.util.Locale
 import javax.net.ssl.HttpsURLConnection
 
-<<<<<<< HEAD
-    private val _selectedPlant = MutableStateFlow("") // Dikosongkan agar user bisa milih
-    val selectedPlant: StateFlow<String> = _selectedPlant.asStateFlow()
+data class PlantOption(val name: String, val emoji: String, val totalDays: Int, val idTanaman: Int)
 
-    private val _plantingDate = MutableStateFlow(
-        SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
-    )
-    val plantingDate: StateFlow<String> = _plantingDate.asStateFlow()
-=======
-data class PlantOption(val name: String, val emoji: String, val totalDays: Int)
 sealed class AiRecommendationState {
     object Idle : AiRecommendationState()
     object Loading : AiRecommendationState()
@@ -46,19 +32,19 @@ sealed class AiRecommendationState {
     data class Error(val message: String) : AiRecommendationState()
 }
 
-class AddPlantViewModel : ViewModel() {
+class AddPlantViewModel(private val roomRepository: RoomPlantRepository? = null) : ViewModel() {
     private val GROQ_API_KEY = BuildConfig.GROQ_API_KEY
     private val GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
     val plantOptions = listOf(
-        PlantOption("Tomato", "🍅", 70),
-        PlantOption("Red Chili", "🌶️", 85),
-        PlantOption("Spinach", "🥬", 45),
-        PlantOption("Mustard Greens", "🥬", 35),
-        PlantOption("Lettuce", "🥗", 50),
-        PlantOption("Green Onion", "🌿", 70),
-        PlantOption("Bell Pepper", "🫑", 80),
-        PlantOption("Cucumber", "🥒", 55),
+        PlantOption("Tomato", "🍅", 70, 1),
+        PlantOption("Red Chili", "🌶️", 85, 2),
+        PlantOption("Spinach", "🥬", 45, 3),
+        PlantOption("Mustard Greens", "🥬", 35, 4),
+        PlantOption("Lettuce", "🥗", 50, 5),
+        PlantOption("Green Onion", "🌿", 70, 6),
+        PlantOption("Bell Pepper", "🫑", 80, 7),
+        PlantOption("Cucumber", "🥒", 55, 8),
     )
 
     private val _selectedPlant = MutableStateFlow<PlantOption?>(null)
@@ -72,87 +58,10 @@ class AddPlantViewModel : ViewModel() {
 
     private val _plantingYear = MutableStateFlow("")
     val plantingYear: StateFlow<String> = _plantingYear.asStateFlow()
->>>>>>> origin/Hasna
 
     private val _location = MutableStateFlow("")
     val location: StateFlow<String> = _location.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    fun updateSelectedPlant(plant: String) {
-        _selectedPlant.value = plant
-    }
-
-    fun updatePlantingDate(date: String) {
-        _plantingDate.value = date
-    }
-
-    fun updateLocation(newLocation: String) {
-        _location.value = newLocation
-    }
-
-    fun savePlantManually(plantName: String, onComplete: () -> Unit) {
-        viewModelScope.launch {
-            // Find corresponding catalog ID if possible
-            var idTanaman = 1 // Default to Tomato if not found
-            try {
-                val catalog = plantRepository.allCatalog.first()
-                val matched = catalog.find { plantName.contains(it.nama_tanaman, ignoreCase = true) }
-                if (matched != null) {
-                    idTanaman = matched.id_tanaman
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-
-            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val dateStr = format.format(Date())
-
-            val newPlant = MyPlantEntity(
-                id_tanaman = idTanaman,
-                tanggal_mulai_tanam = dateStr,
-                nama_pot = plantName,
-                progress_persen = 0f,
-                next_watering = "",
-                status_tanaman = "Sehat"
-            )
-
-            plantRepository.addPlant(newPlant)
-            onComplete()
-        }
-    }
-
-    fun generateAiSchedule(weatherCondition: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            val condition = "Location: ${_location.value}, Date: ${_plantingDate.value}, Weather: $weatherCondition"
-
-            try {
-                val result = aiService.generateCareSchedule(_selectedPlant.value, condition)
-                _isLoading.value = false
-                if (result != null) {
-                    val startIndex = result.indexOf('{')
-                    val endIndex = result.lastIndexOf('}')
-                    if (startIndex != -1 && endIndex != -1 && endIndex >= startIndex) {
-                        val cleanJson = result.substring(startIndex, endIndex + 1)
-                        onSuccess(cleanJson)
-                    } else {
-                        onError("AI response did not contain JSON.")
-                    }
-                } else {
-                    onError("AI did not return a response. Please try again.")
-                }
-            } catch (e: Exception) {
-                _isLoading.value = false
-                onError("Error: ${e.message}")
-            }
-        }
-    }
-<<<<<<< HEAD
-}
-=======
-}
     private val _plantError = MutableStateFlow(false)
     val plantError: StateFlow<Boolean> = _plantError.asStateFlow()
 
@@ -169,31 +78,49 @@ class AddPlantViewModel : ViewModel() {
         _selectedPlant.value = option
         _plantError.value = false
         _aiState.value = AiRecommendationState.Idle
+        tryAutoTriggerAi()
     }
 
     fun updateDay(value: String) {
         if (value.length <= 2 && value.all { it.isDigit() }) {
-            _plantingDay.value = value; _dateError.value = false
+            _plantingDay.value = value
+            _dateError.value = false
+            tryAutoTriggerAi()
         }
     }
 
     fun updateMonth(value: String) {
         if (value.length <= 2 && value.all { it.isDigit() }) {
-            _plantingMonth.value = value; _dateError.value = false
+            _plantingMonth.value = value
+            _dateError.value = false
+            tryAutoTriggerAi()
         }
     }
 
     fun updateYear(value: String) {
         if (value.length <= 4 && value.all { it.isDigit() }) {
-            _plantingYear.value = value; _dateError.value = false
+            _plantingYear.value = value
+            _dateError.value = false
+            tryAutoTriggerAi()
         }
     }
 
     fun updateLocation(value: String) { _location.value = value }
-    fun getAiRecommendation() {
-        val plant = _selectedPlant.value ?: run {
-            _plantError.value = true; return
+
+    /** Auto-trigger AI begitu plant + tanggal (4 digit) lengkap */
+    private fun tryAutoTriggerAi() {
+        val plant = _selectedPlant.value ?: return
+        val d = _plantingDay.value.toIntOrNull() ?: return
+        val m = _plantingMonth.value.toIntOrNull() ?: return
+        val y = _plantingYear.value.toIntOrNull() ?: return
+        if (d !in 1..31 || m !in 1..12 || y < 2020 || _plantingYear.value.length < 4) return
+        if (_aiState.value is AiRecommendationState.Idle) {
+            getAiRecommendation()
         }
+    }
+
+    fun getAiRecommendation() {
+        val plant = _selectedPlant.value ?: run { _plantError.value = true; return }
         val d = _plantingDay.value.toIntOrNull()
         val m = _plantingMonth.value.toIntOrNull()
         val y = _plantingYear.value.toIntOrNull()
@@ -209,22 +136,26 @@ class AddPlantViewModel : ViewModel() {
             _aiState.value = AiRecommendationState.Loading
             try {
                 val prompt = """
-                    Kamu adalah ahli perawatan tanaman. Berikan rekomendasi jadwal perawatan yang singkat dan ramah untuk:
+                    Kamu adalah ahli perawatan tanaman. Berikan rekomendasi jadwal perawatan singkat untuk:
                     - Tanaman: ${plant.name}
                     - Tanggal tanam: $dateStr
                     - Lokasi: $location
-                    - Perkiraan panen: ${plant.totalDays} hari sejak tanam
-    
-                    Jawab dalam 2-3 kalimat saja dalam Bahasa Indonesia. Sertakan: frekuensi penyiraman, jadwal pemupukan, dan satu tips penting.
-                    Spesifik dengan waktu dan intervalnya. Buat praktis dan menyemangati.
+                    - Perkiraan panen: ${plant.totalDays} hari
+
+                    Jawab 2-3 kalimat dalam Bahasa Indonesia. Sebutkan: frekuensi penyiraman, jadwal pemupukan, satu tips. Buat menyemangati!
                     """.trimIndent()
 
                 val result = callGroqApi(prompt)
                 _aiState.value = AiRecommendationState.Success(result)
             } catch (e: Exception) {
-                val msg = e.message ?: "Unknown error"
-                android.util.Log.e("GroqAPI", "Error: $msg", e)
-                _aiState.value = AiRecommendationState.Error("Error: $msg")
+                android.util.Log.e("GroqAPI", "Error: ${e.message}", e)
+                if (e.message?.contains("401") == true || GROQ_API_KEY.isEmpty() || GROQ_API_KEY == "YOUR_API_KEY") {
+                    // Fallback to mock data if API key is invalid/missing
+                    val mockRecommendation = "Siram ${plant.name} setiap hari. Berikan pupuk organik setiap 2 minggu. Pastikan tanaman mendapat sinar matahari yang cukup. Semangat bertanam!"
+                    _aiState.value = AiRecommendationState.Success(mockRecommendation)
+                } else {
+                    _aiState.value = AiRecommendationState.Error("Gagal terhubung ke AI: ${e.message}")
+                }
             }
         }
     }
@@ -244,15 +175,11 @@ class AddPlantViewModel : ViewModel() {
                 put("model", "llama-3.1-8b-instant")
                 put("max_tokens", 200)
                 put("messages", JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("role", "user")
-                        put("content", prompt)
-                    })
+                    put(JSONObject().apply { put("role", "user"); put("content", prompt) })
                 })
             }.toString()
 
             OutputStreamWriter(connection.outputStream).use { it.write(body) }
-
             val responseCode = connection.responseCode
             val response = if (responseCode == 200) {
                 connection.inputStream.bufferedReader().readText()
@@ -260,13 +187,8 @@ class AddPlantViewModel : ViewModel() {
                 val errorBody = connection.errorStream?.bufferedReader()?.readText() ?: "No error body"
                 throw Exception("HTTP $responseCode: $errorBody")
             }
-
-            val json = JSONObject(response)
-            json.getJSONArray("choices")
-                .getJSONObject(0)
-                .getJSONObject("message")
-                .getString("content")
-                .trim()
+            JSONObject(response).getJSONArray("choices")
+                .getJSONObject(0).getJSONObject("message").getString("content").trim()
         }
     }
 
@@ -286,18 +208,40 @@ class AddPlantViewModel : ViewModel() {
         if (!isFormValid()) return
 
         val option = _selectedPlant.value!!
-        val stages = when (option.name) {
-            "Spinach", "Mustard Greens", "Lettuce", "Green Onion" ->
-                listOf("Seed", "Sprout", "Veg", "Harvest")
-            else ->
-                listOf("Seed", "Sprout", "Veg", "Flower", "Fruit")
-        }
         val wateringFreq = when (option.name) {
             "Red Chili", "Bell Pepper" -> "Every 3 days"
             "Spinach", "Lettuce", "Mustard Greens" -> "Every day"
             else -> "Every 2 days"
         }
+        val stages = when (option.name) {
+            "Spinach", "Mustard Greens", "Lettuce", "Green Onion" ->
+                listOf("Seed", "Sprout", "Veg", "Harvest")
+            else -> listOf("Seed", "Sprout", "Veg", "Flower", "Fruit")
+        }
 
+        // === Simpan ke Room DB ===
+        if (roomRepository != null) {
+            val dateStr = "${_plantingYear.value}-${_plantingMonth.value.padStart(2,'0')}-${_plantingDay.value.padStart(2,'0')}"
+
+            val plant = MyPlantEntity(
+                id_tanaman = option.idTanaman,  // ID sesuai jenis tanaman
+                tanggal_mulai_tanam = dateStr,
+                nama_pot = option.name,
+                progress_persen = 0f,
+                next_watering = "08:00",
+                status_tanaman = "Sehat"
+            )
+            val newId = roomRepository.addPlant(plant)
+
+            // Buat schedule Penyiraman + Pemupukan
+            val schedules = listOf(
+                TaskScheduleEntity(id_kebun = newId.toInt(), jenis_tugas = "Penyiraman", waktu_eksekusi = "07:00", status_tugas = "Pending"),
+                TaskScheduleEntity(id_kebun = newId.toInt(), jenis_tugas = "Pemupukan", waktu_eksekusi = "16:00", status_tugas = "Pending")
+            )
+            roomRepository.saveSchedules(schedules)
+        }
+
+        // Juga simpan ke mock PlantRepository (HomeScreen)
         val entry = PlantEntry(
             id = option.name.lowercase().replace(" ", "_"),
             name = option.name,
@@ -310,9 +254,7 @@ class AddPlantViewModel : ViewModel() {
             wateringFrequency = wateringFreq,
             stages = stages
         )
-
         PlantRepository.addPlant(entry)
         _savedEvent.emit(option.name)
     }
 }
->>>>>>> origin/Hasna

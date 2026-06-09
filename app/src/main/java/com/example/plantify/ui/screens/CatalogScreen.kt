@@ -34,21 +34,17 @@ import com.example.plantify.ui.viewmodel.CatalogViewModel
 @Composable
 fun CatalogScreen(
     viewModel: CatalogViewModel = viewModel(),
-    onAddPlantClick: () -> Unit = {},
+    onAddPlantClick: (String?) -> Unit = {},
     onPlantClick: (String) -> Unit = {}
 ) {
     val plants by viewModel.plants.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
 
     Scaffold(
-<<<<<<< HEAD
         containerColor = MaterialTheme.colorScheme.background,
-=======
-        containerColor = Color(0xFFF8F9FA),
->>>>>>> origin/Hasna
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onAddPlantClick,
+                onClick = { onAddPlantClick(null) },
                 containerColor = PlantifyMediumGreen,
                 contentColor = Color.White,
                 shape = CircleShape,
@@ -62,11 +58,7 @@ fun CatalogScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-<<<<<<< HEAD
                 .background(MaterialTheme.colorScheme.background)
-=======
-                .background(Color(0xFFF8F9FA))
->>>>>>> origin/Hasna
         ) {
             Box(
                 modifier = Modifier
@@ -123,31 +115,19 @@ fun CatalogScreen(
                     )
                 }
 
-<<<<<<< HEAD
-                Spacer(modifier = Modifier.height(16.dp))
-
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 80.dp)
-=======
                 Spacer(modifier = Modifier.height(24.dp))
 
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 80.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
->>>>>>> origin/Hasna
                 ) {
                     items(plants) { plant ->
                         CatalogPlantItem(
                             plant = plant,
-                            onAddClick = onAddPlantClick,
+                            onAddClick = { onAddPlantClick(plant.name) },
                             onItemClick = { onPlantClick(plant.name) }
                         )
-<<<<<<< HEAD
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-=======
->>>>>>> origin/Hasna
                     }
                 }
             }
@@ -156,11 +136,7 @@ fun CatalogScreen(
 }
 
 @Composable
-<<<<<<< HEAD
 fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> Unit = {}) {
-=======
-fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> Unit) {
->>>>>>> origin/Hasna
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -210,14 +186,13 @@ fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: 
                         shape = RoundedCornerShape(4.dp)
                     ) {
                         Text(
-                            text = "${plant.duration} • ${plant.watering}",
-                            fontSize = 12.sp,
-                            color = PlantifyTextGray,
+                            text = plant.difficulty,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            fontSize = 10.sp,
+                            color = Color(0xFF1B5E20), // Dark green text for high contrast on light backgrounds
                             fontWeight = FontWeight.Medium
                         )
                     }
-<<<<<<< HEAD
-=======
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "${plant.duration} • ${plant.watering}",
@@ -225,7 +200,6 @@ fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: 
                         color = PlantifyTextGray,
                         fontWeight = FontWeight.Medium
                     )
->>>>>>> origin/Hasna
                 }
             }
 

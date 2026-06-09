@@ -20,20 +20,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.plantify.ui.theme.PlantifyLightGreen
 import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.viewmodel.AddPlantViewModel
-<<<<<<< HEAD
-import com.example.plantify.ui.viewmodel.ViewModelFactory
-import androidx.compose.ui.platform.LocalContext
-=======
 import com.example.plantify.ui.viewmodel.AiRecommendationState
 import com.example.plantify.ui.viewmodel.PlantOption
+import com.example.plantify.ui.viewmodel.ViewModelFactory
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
->>>>>>> origin/Hasna
 
 @Composable
 fun AddPlantScreen(
+    plantName: String? = null,
     viewModel: AddPlantViewModel = viewModel(factory = ViewModelFactory(LocalContext.current)),
     onBackClick: () -> Unit = {},
     onPlantSaved: () -> Unit = {}
@@ -50,6 +47,15 @@ fun AddPlantScreen(
     val scope = rememberCoroutineScope()
     var showSuccessDialog by remember { mutableStateOf(false) }
     var showPlantDropdown by remember { mutableStateOf(false) }
+
+    LaunchedEffect(plantName) {
+        if (!plantName.isNullOrEmpty()) {
+            val option = viewModel.plantOptions.find { it.name.equals(plantName, ignoreCase = true) }
+            if (option != null) {
+                viewModel.selectPlant(option)
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.savedEvent.collect {
@@ -70,9 +76,9 @@ fun AddPlantScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(MaterialTheme.colorScheme.background)
     ) {
-
+        // Header bar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -102,23 +108,26 @@ fun AddPlantScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
+            // ── Pilih Tanaman ──
             FormCard {
-                Text("Select Plant", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                Text("Select Plant", fontWeight = FontWeight.Bold, fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(8.dp))
                 Box {
                     OutlinedTextField(
                         value = if (selectedPlant != null) "${selectedPlant!!.emoji} ${selectedPlant!!.name} (~${selectedPlant!!.totalDays} days)" else "",
                         onValueChange = {},
                         readOnly = true,
-                        placeholder = { Text("Choose a plant...", color = Color.Gray) },
+                        placeholder = { Text("Choose a plant...", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)) },
                         modifier = Modifier.fillMaxWidth(),
                         trailingIcon = {
                             Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = PlantifyMediumGreen)
                         },
                         shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            disabledBorderColor = if (plantError) Color.Red else Color.LightGray,
-                            disabledTextColor = Color.Black
+                            disabledBorderColor = if (plantError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
                         ),
                         enabled = false
                     )
@@ -135,7 +144,8 @@ fun AddPlantScreen(
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Column {
                                             Text(option.name, fontWeight = FontWeight.Medium, fontSize = 14.sp)
-                                            Text("~${option.totalDays} days to harvest", fontSize = 12.sp, color = Color.Gray)
+                                            Text("~${option.totalDays} days to harvest", fontSize = 12.sp,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                                         }
                                     }
                                 },
@@ -148,45 +158,62 @@ fun AddPlantScreen(
                     }
                 }
                 if (plantError) {
-                    Text("Please select a plant", color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+                    Text("Please select a plant", color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
                 }
             }
 
+            // ── Tanggal Tanam ──
             FormCard {
-                Text("Planting Date", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                Text("Planting Date", fontWeight = FontWeight.Bold, fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    DateField(value = plantingDay, onValueChange = viewModel::updateDay, placeholder = "DD", modifier = Modifier.weight(1f), isError = dateError)
-                    DateField(value = plantingMonth, onValueChange = viewModel::updateMonth, placeholder = "MM", modifier = Modifier.weight(1f), isError = dateError)
-                    DateField(value = plantingYear, onValueChange = viewModel::updateYear, placeholder = "YYYY", modifier = Modifier.weight(2f), isError = dateError)
+                    DateField(value = plantingDay, onValueChange = viewModel::updateDay,
+                        placeholder = "DD", modifier = Modifier.weight(1f), isError = dateError)
+                    DateField(value = plantingMonth, onValueChange = viewModel::updateMonth,
+                        placeholder = "MM", modifier = Modifier.weight(1f), isError = dateError)
+                    DateField(value = plantingYear, onValueChange = viewModel::updateYear,
+                        placeholder = "YYYY", modifier = Modifier.weight(2f), isError = dateError)
                 }
                 if (dateError) {
-                    Text("Please enter a valid date", color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+                    Text("Please enter a valid date", color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
                 }
             }
 
+            // ── Lokasi ──
             FormCard {
-                Text("Location / Pot Name", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                Text("Location / Pot Name", fontWeight = FontWeight.Bold, fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = location,
                     onValueChange = viewModel::updateLocation,
-                    placeholder = { Text("e.g. Balcony pot #1", color = Color.Gray) },
+                    placeholder = { Text("e.g. Balcony pot #1",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color.LightGray,
-                        focusedBorderColor = PlantifyMediumGreen
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedBorderColor = PlantifyMediumGreen,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
             }
 
+            // ── AI Smart Advisor Card ──
             Card(
-                colors = CardDefaults.cardColors(containerColor = PlantifyLightGreen.copy(alpha = 0.4f)),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
                 shape = RoundedCornerShape(14.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -195,14 +222,14 @@ fun AddPlantScreen(
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = null,
-                            tint = Color(0xFF0D674E),
+                            tint = PlantifyMediumGreen,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Smart Care Advisor (AI)",
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0D674E),
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 15.sp
                         )
                     }
@@ -212,9 +239,9 @@ fun AddPlantScreen(
                     when (aiState) {
                         is AiRecommendationState.Idle -> {
                             Text(
-                                text = "Fill in plant and date above, then tap the button below to get a personalized care schedule from AI.",
+                                text = "Pilih tanaman dan isi tanggal di atas, lalu AI akan otomatis memberikan jadwal perawatan untukmu.",
                                 fontSize = 13.sp,
-                                color = Color(0xFF0D674E),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                 lineHeight = 18.sp
                             )
                         }
@@ -226,22 +253,29 @@ fun AddPlantScreen(
                                     strokeWidth = 2.dp
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
-                                Text("Generating recommendation...", fontSize = 13.sp, color = Color(0xFF0D674E))
+                                Text("AI sedang membuat jadwal perawatan...",
+                                    fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                         is AiRecommendationState.Success -> {
-                            Text(
-                                text = (aiState as AiRecommendationState.Success).recommendation,
-                                fontSize = 13.sp,
-                                color = Color(0xFF0D674E),
-                                lineHeight = 19.sp
-                            )
+                            Surface(
+                                color = PlantifyMediumGreen.copy(alpha = 0.12f),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    text = (aiState as AiRecommendationState.Success).recommendation,
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    lineHeight = 19.sp,
+                                    modifier = Modifier.padding(12.dp)
+                                )
+                            }
                         }
                         is AiRecommendationState.Error -> {
                             Text(
                                 text = (aiState as AiRecommendationState.Error).message,
                                 fontSize = 13.sp,
-                                color = Color.Red
+                                color = MaterialTheme.colorScheme.error
                             )
                         }
                     }
@@ -252,12 +286,14 @@ fun AddPlantScreen(
                         onClick = { viewModel.getAiRecommendation() },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF0D674E)),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF0D674E)),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = PlantifyMediumGreen
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, PlantifyMediumGreen),
                         enabled = aiState !is AiRecommendationState.Loading
                     ) {
                         Text(
-                            text = if (aiState is AiRecommendationState.Success) "🔄 Regenerate" else "✨ Get AI Recommendation",
+                            text = if (aiState is AiRecommendationState.Success) "🔄 Regenerate AI" else "✨ Get AI Recommendation",
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -266,27 +302,19 @@ fun AddPlantScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
+            // ── Tombol Simpan ──
             Button(
                 onClick = { scope.launch { viewModel.savePlant() } },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PlantifyMediumGreen,
-                    disabledContainerColor = Color(0xFFB0BEC5)
-                ),
-                shape = RoundedCornerShape(12.dp),
-                enabled = aiState is AiRecommendationState.Success
-            ) {
-                Text("Use AI Schedule", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            }
-
-            OutlinedButton(
-                onClick = { scope.launch { viewModel.savePlant() } },
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = PlantifyMediumGreen),
-                border = androidx.compose.foundation.BorderStroke(1.dp, PlantifyMediumGreen),
+                colors = ButtonDefaults.buttonColors(containerColor = PlantifyMediumGreen),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Customize manually instead", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = if (aiState is AiRecommendationState.Success) "✅ Save with AI Schedule" else "💾 Save Plant",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -299,7 +327,7 @@ private fun FormCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp), content = content)
@@ -317,14 +345,19 @@ private fun DateField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        placeholder = { Text(placeholder, color = Color.Gray, fontSize = 13.sp) },
+        placeholder = { Text(placeholder,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), fontSize = 13.sp) },
         modifier = modifier,
         shape = RoundedCornerShape(10.dp),
         singleLine = true,
         isError = isError,
         colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = if (isError) Color.Red else Color.LightGray,
-            focusedBorderColor = PlantifyMediumGreen
+            unfocusedBorderColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
+            focusedBorderColor = if (isError) MaterialTheme.colorScheme.error else PlantifyMediumGreen,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     )
 }
@@ -341,12 +374,12 @@ private fun SuccessDialog(plantName: String, onDismiss: () -> Unit) {
                 modifier = Modifier.size(48.dp)
             )
         },
-        title = { Text("Plant Added!", fontWeight = FontWeight.Bold, fontSize = 20.sp) },
+        title = { Text("Plant Added! 🌱", fontWeight = FontWeight.Bold, fontSize = 20.sp) },
         text = {
             Text(
-                text = "$plantName has been added to your garden. Track its growth in the Growth Progress screen.",
+                text = "$plantName has been added to your garden.\nCek Schedule dan Growth Progress untuk melihat jadwal perawatannya!",
                 fontSize = 14.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 lineHeight = 20.sp
             )
         },
@@ -356,7 +389,7 @@ private fun SuccessDialog(plantName: String, onDismiss: () -> Unit) {
                 colors = ButtonDefaults.buttonColors(containerColor = PlantifyMediumGreen),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Go to Home")
+                Text("Ke Home", color = Color.White)
             }
         },
         shape = RoundedCornerShape(16.dp)

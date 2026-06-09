@@ -27,6 +27,16 @@ import com.example.plantify.ui.theme.*
 import com.example.plantify.ui.viewmodel.ProfileViewModel
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import androidx.compose.ui.platform.LocalContext
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
 
 @Composable
 fun ProfileScreen(
@@ -35,6 +45,7 @@ fun ProfileScreen(
     onNotificationClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     val plantsCount by viewModel.plantsCount.collectAsState()
     val daysActive by viewModel.daysActive.collectAsState()
@@ -89,20 +100,28 @@ fun ProfileScreen(
     if (showLanguageDialog) {
         AlertDialog(
             onDismissRequest = { showLanguageDialog = false },
-            title = { Text(stringResource(R.string.choose_language)) },
+            title = { Text(stringResource(R.string.choose_language), fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    TextButton(onClick = { 
-                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
-                        showLanguageDialog = false 
-                    }) {
-                        Text(stringResource(R.string.english))
+                    TextButton(
+                        onClick = {
+                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
+                            showLanguageDialog = false
+                            context.findActivity()?.recreate()
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("🇬🇧  " + stringResource(R.string.english), fontSize = 16.sp)
                     }
-                    TextButton(onClick = { 
-                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("id"))
-                        showLanguageDialog = false 
-                    }) {
-                        Text(stringResource(R.string.indonesian))
+                    TextButton(
+                        onClick = {
+                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("id"))
+                            showLanguageDialog = false
+                            context.findActivity()?.recreate()
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("🇮🇩  " + stringResource(R.string.indonesian), fontSize = 16.sp)
                     }
                 }
             },
@@ -110,7 +129,8 @@ fun ProfileScreen(
                 TextButton(onClick = { showLanguageDialog = false }) {
                     Text(stringResource(R.string.cancel))
                 }
-            }
+            },
+            shape = RoundedCornerShape(16.dp)
         )
     }
 

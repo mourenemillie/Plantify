@@ -19,7 +19,7 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
 
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(plantRepository) as T
+            return HomeViewModel() as T
         }
         if (modelClass.isAssignableFrom(ScheduleViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
@@ -41,6 +41,10 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
         if (modelClass.isAssignableFrom(AddPlantViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return AddPlantViewModel(plantRepository) as T
+        }
+        if (modelClass.isAssignableFrom(AlertsViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return AlertsViewModel(plantRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
