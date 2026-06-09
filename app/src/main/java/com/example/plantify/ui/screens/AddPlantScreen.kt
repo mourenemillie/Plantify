@@ -17,10 +17,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.theme.PlantifyLightGreen
 import com.example.plantify.ui.viewmodel.AddPlantViewModel
+import com.example.plantify.ui.viewmodel.ViewModelFactory
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun AddPlantScreen(
-    viewModel: AddPlantViewModel = viewModel(),
+    viewModel: AddPlantViewModel = viewModel(factory = ViewModelFactory(LocalContext.current)),
     onBackClick: () -> Unit = {},
     onUseAiSchedule: () -> Unit = {},
     onCustomizeManually: () -> Unit = {}

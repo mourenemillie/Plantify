@@ -146,7 +146,12 @@ fun PlantifyApp(profileViewModel: ProfileViewModel = viewModel()) {
                 GrowthProgressScreen()
             }
             composable(Screen.Profile.route) {
-                ProfileScreen(viewModel = profileViewModel)
+                ProfileScreen(
+                    viewModel = profileViewModel,
+                    onNotificationClick = {
+                        navController.navigate(Screen.Alerts.route)
+                    }
+                )
             }
             composable(Screen.AddPlant.route) {
                 AddPlantScreen()

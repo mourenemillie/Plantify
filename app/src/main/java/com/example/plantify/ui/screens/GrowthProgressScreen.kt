@@ -25,10 +25,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.data.GrowthProgressItem
 import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.viewmodel.GrowthProgressViewModel
+import com.example.plantify.ui.viewmodel.ViewModelFactory
+import androidx.compose.ui.platform.LocalContext
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GrowthProgressScreen(
-    viewModel: GrowthProgressViewModel = viewModel(),
+    viewModel: GrowthProgressViewModel = viewModel(factory = ViewModelFactory(LocalContext.current)),
     onBackClick: () -> Unit = {}
 ) {
     val growthItems by viewModel.growthItems.collectAsState()

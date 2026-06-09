@@ -14,7 +14,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import com.example.plantify.R
+import java.util.UUID
+import androidx.lifecycle.viewModelScope
 
 class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() {
 
@@ -39,7 +40,6 @@ class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() 
                 daysGrown = 15,
                 progress = 0.85f,
                 nextWatering = "Today",
-                imageUrl = "https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=200&h=200&fit=crop",
                 imageRes = R.drawable.ic_plant_tomato
             ),
             Plant(
@@ -48,7 +48,6 @@ class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() 
                 daysGrown = 22,
                 progress = 0.92f,
                 nextWatering = "Tomorrow",
-                imageUrl = "https://images.unsplash.com/photo-1588252303782-cb80119abd6e?w=200&h=200&fit=crop",
                 imageRes = R.drawable.ic_plant_red_chili
             ),
             Plant(
@@ -57,10 +56,10 @@ class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() 
                 daysGrown = 8,
                 progress = 0.45f,
                 nextWatering = "Today",
-                imageUrl = "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=200&h=200&fit=crop",
                 imageRes = R.drawable.ic_plant_spinach
             )
         )
+    }
 
     private fun loadRealData() {
         viewModelScope.launch {
@@ -74,15 +73,15 @@ class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() 
                     val catalogInfo = catalogList.find { it.id_tanaman == entity.id_tanaman }
                     val emoji = catalogInfo?.emoji_icon ?: "🌱"
                     val nameStr = catalogInfo?.nama_tanaman ?: "Unknown"
-                    val imgRes = when(nameStr.lowercase()) {
-                        "tomato" -> R.drawable.ic_plant_tomato
-                        "red chili" -> R.drawable.ic_plant_red_chili
-                        "spinach" -> R.drawable.ic_plant_spinach
-                        "mustard greens" -> R.drawable.ic_plant_mustard_greens
-                        "lettuce" -> R.drawable.ic_plant_lettuce
-                        "green onion" -> R.drawable.ic_plant_green_onion
-                        "bell pepper" -> R.drawable.ic_plant_bell_pepper
-                        "cucumber" -> R.drawable.ic_plant_cucumber
+                    val imgRes = when {
+                        nameStr.contains("tomato", ignoreCase = true) -> R.drawable.ic_plant_tomato
+                        nameStr.contains("red chili", ignoreCase = true) -> R.drawable.ic_plant_red_chili
+                        nameStr.contains("spinach", ignoreCase = true) -> R.drawable.ic_plant_spinach
+                        nameStr.contains("mustard", ignoreCase = true) -> R.drawable.ic_plant_mustard_greens
+                        nameStr.contains("lettuce", ignoreCase = true) -> R.drawable.ic_plant_lettuce
+                        nameStr.contains("onion", ignoreCase = true) -> R.drawable.ic_plant_green_onion
+                        nameStr.contains("pepper", ignoreCase = true) -> R.drawable.ic_plant_bell_pepper
+                        nameStr.contains("cucumber", ignoreCase = true) -> R.drawable.ic_plant_cucumber
                         else -> 0
                     }
                     

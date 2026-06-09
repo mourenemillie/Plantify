@@ -19,7 +19,8 @@ import com.example.plantify.ui.theme.PlantifyMediumGreen
 @Composable
 fun PlantDetailScreen(
     plantId: String,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onGrowthProgressClick: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {

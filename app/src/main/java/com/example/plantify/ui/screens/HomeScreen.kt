@@ -26,10 +26,12 @@ import com.example.plantify.data.PlantTask
 import com.example.plantify.data.TaskType
 import com.example.plantify.ui.theme.*
 import com.example.plantify.ui.viewmodel.HomeViewModel
+import com.example.plantify.ui.viewmodel.ViewModelFactory
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel(),
+    viewModel: HomeViewModel = viewModel(factory = ViewModelFactory(LocalContext.current)),
     onPlantClick: (String) -> Unit = {},
     onNotificationClick: () -> Unit = {}
 ) {

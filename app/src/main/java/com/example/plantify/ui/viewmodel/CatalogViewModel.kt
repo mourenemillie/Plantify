@@ -35,6 +35,5 @@ class CatalogViewModel : ViewModel() {
 
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
-        // Here you could filter _plants based on the query, but we keep it simple for now
     }
 }

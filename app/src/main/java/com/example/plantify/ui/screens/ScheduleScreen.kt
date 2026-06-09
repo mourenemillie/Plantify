@@ -16,17 +16,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.plantify.R
 import com.example.plantify.data.ScheduleGroup
 import com.example.plantify.data.ScheduleItem
 import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.viewmodel.ScheduleViewModel
+import com.example.plantify.ui.viewmodel.ViewModelFactory
+import androidx.compose.ui.platform.LocalContext
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel()) {
+fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel(factory = ViewModelFactory(LocalContext.current))) {
     val scheduleGroups by viewModel.scheduleGroups.collectAsState()
 
     Column(
@@ -41,7 +46,7 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel()) {
                 .padding(horizontal = 24.dp, vertical = 20.dp)
         ) {
             Text(
-                text = "Care Schedule",
+                text = stringResource(R.string.care_schedule),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White

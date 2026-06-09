@@ -18,10 +18,12 @@ class AddPlantViewModel(private val plantRepository: PlantRepository) : ViewMode
 
     private val aiService = AiService()
 
-    private val _selectedPlant = MutableStateFlow("Tomato (60-80 days)")
+    private val _selectedPlant = MutableStateFlow("") // Dikosongkan agar user bisa milih
     val selectedPlant: StateFlow<String> = _selectedPlant.asStateFlow()
 
-    private val _plantingDate = MutableStateFlow("April 20, 2026")
+    private val _plantingDate = MutableStateFlow(
+        SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date())
+    )
     val plantingDate: StateFlow<String> = _plantingDate.asStateFlow()
 
     private val _location = MutableStateFlow("")
@@ -29,6 +31,14 @@ class AddPlantViewModel(private val plantRepository: PlantRepository) : ViewMode
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    fun updateSelectedPlant(plant: String) {
+        _selectedPlant.value = plant
+    }
+
+    fun updatePlantingDate(date: String) {
+        _plantingDate.value = date
+    }
 
     fun updateLocation(newLocation: String) {
         _location.value = newLocation
@@ -65,11 +75,11 @@ class AddPlantViewModel(private val plantRepository: PlantRepository) : ViewMode
         }
     }
 
-    fun generateAiSchedule(onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+    fun generateAiSchedule(weatherCondition: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             _isLoading.value = true
-            val condition = "Location: ${_location.value}, Date: ${_plantingDate.value}, Weather: 32°C Sunny"
-            
+            val condition = "Location: ${_location.value}, Date: ${_plantingDate.value}, Weather: $weatherCondition"
+
             try {
                 val result = aiService.generateCareSchedule(_selectedPlant.value, condition)
                 _isLoading.value = false
