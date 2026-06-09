@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.ui.theme.PlantifyMediumGreen
+import com.example.plantify.ui.viewmodel.PlantDetailViewModel
 
 @Composable
 fun PlantDetailScreen(
