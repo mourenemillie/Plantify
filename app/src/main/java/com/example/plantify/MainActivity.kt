@@ -10,10 +10,9 @@ import com.example.plantify.ui.PlantifyApp
 import com.example.plantify.ui.theme.PlantifyTheme
 import com.example.plantify.ui.viewmodel.ProfileViewModel
 
-//perlu diingat! file utama hanya untuk navigasi!
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
             val profileViewModel: ProfileViewModel = viewModel()
