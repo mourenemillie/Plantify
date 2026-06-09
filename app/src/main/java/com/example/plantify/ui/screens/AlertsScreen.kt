@@ -30,7 +30,7 @@ fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFBFBFB))
+            .background(MaterialTheme.colorScheme.background)
     ) {
 
         Row(
@@ -45,7 +45,7 @@ fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
                 style = TextStyle(
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2D3436)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             )
             Text(
@@ -91,7 +91,7 @@ fun NotificationItem(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
     ) {
         Row(
@@ -107,7 +107,7 @@ fun NotificationItem(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = Color(0xFF2D3436),
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -125,7 +125,7 @@ fun NotificationItem(
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
-                            color = Color(0xFF2D3436)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                     if (isUnread) {
@@ -138,13 +138,13 @@ fun NotificationItem(
                 }
                 Text(
                     text = desc,
-                    color = Color(0xFF636E72),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     fontSize = 14.sp
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = time,
-                    color = Color(0xFFB2BEC3),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                     fontSize = 12.sp
                 )
             }

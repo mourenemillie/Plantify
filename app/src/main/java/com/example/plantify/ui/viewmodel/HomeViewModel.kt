@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.plantify.R
 import com.example.plantify.data.Plant
+import com.example.plantify.data.PlantRepository
 import com.example.plantify.data.PlantTask
 import com.example.plantify.data.TaskType
 import com.example.plantify.data.repository.PlantRepository
@@ -15,6 +16,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.launch
+import java.util.UUID
 
 class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() {
 
@@ -113,6 +116,40 @@ class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() 
             (diff / (1000 * 60 * 60 * 24)).toInt()
         } catch (e: Exception) {
             0
+        }
+    }
+        viewModelScope.launch {
+            PlantRepository.plants.collect { entries ->
+                _plants.value = entries.map { entry ->
+                    val currentDay = PlantRepository.calcCurrentDay(entry)
+                    val progress = PlantRepository.calcProgress(entry)
+                    val nextWatering = when {
+                        currentDay % 2 == 0 -> "Today"
+                        else -> "Tomorrow"
+                    }
+                    Plant(
+                        id = entry.id,
+                        name = entry.name,
+                        daysGrown = currentDay,
+                        progress = progress,
+                        nextWatering = nextWatering
+                    )
+                }
+                _tasks.value = entries
+                    .filter { entry ->
+                        val currentDay = PlantRepository.calcCurrentDay(entry)
+                        currentDay % 2 == 0
+                    }
+                    .map { entry ->
+                        PlantTask(
+                            id = UUID.randomUUID().toString(),
+                            title = "Watering",
+                            subtitle = entry.name,
+                            time = "08:00 AM",
+                            type = TaskType.WATERING
+                        )
+                    }
+            }
         }
     }
 }

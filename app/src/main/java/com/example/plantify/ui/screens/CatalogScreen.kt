@@ -1,6 +1,7 @@
 package com.example.plantify.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -16,7 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +56,7 @@ fun CatalogScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .background(Color(0xFFF8F9FA))
         ) {
             Box(
                 modifier = Modifier
@@ -82,9 +83,10 @@ fun CatalogScreen(
             }
 
             Column(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
+                modifier = Modifier.padding(horizontal = 24.dp)
             ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Modern Search Bar
                 Surface(
                     shape = RoundedCornerShape(16.dp),
@@ -113,11 +115,15 @@ fun CatalogScreen(
 
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 80.dp), // Extra padding for FAB
+                    contentPadding = PaddingValues(bottom = 80.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(plants) { plant ->
-                        PlantItem(plant, onAddClick = onAddPlantClick, onItemClick = { onPlantClick(plant.name) })
+                        CatalogPlantItem(
+                            plant = plant,
+                            onAddClick = onAddPlantClick,
+                            onItemClick = { onPlantClick(plant.name) }
+                        )
                     }
                 }
             }
@@ -126,7 +132,7 @@ fun CatalogScreen(
 }
 
 @Composable
-fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> Unit) {
+fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,7 +147,7 @@ fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> U
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Image Container with soft background
+            // Image Container
             Box(
                 modifier = Modifier
                     .size(64.dp)

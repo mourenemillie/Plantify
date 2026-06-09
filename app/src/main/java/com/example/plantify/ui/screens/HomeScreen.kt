@@ -30,7 +30,8 @@ import com.example.plantify.ui.viewmodel.HomeViewModel
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
-    onPlantClick: (String) -> Unit = {}
+    onPlantClick: (String) -> Unit = {},
+    onNotificationClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val plants by viewModel.plants.collectAsState()
@@ -39,10 +40,13 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
     ) {
-        HomeHeader(plantCount = plants.size)
+        HomeHeader(
+            plantCount = plants.size,
+            onNotificationClick = onNotificationClick
+        )
 
         Column(
             modifier = Modifier
@@ -57,7 +61,7 @@ fun HomeScreen(
                 text = stringResource(R.string.my_plants),
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A212E)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             )
 
@@ -81,7 +85,10 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeHeader(plantCount: Int) {
+private fun HomeHeader(
+    plantCount: Int,
+    onNotificationClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -113,8 +120,7 @@ private fun HomeHeader(plantCount: Int) {
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Notification Icon
-                    IconButton(onClick = { /* notif action */ }) {
+                    IconButton(onClick = onNotificationClick) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_notifications),
                             contentDescription = "Notifications",
@@ -142,7 +148,6 @@ private fun HomeHeader(plantCount: Int) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Weather Widget
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 color = Color.White.copy(alpha = 0.15f),
@@ -176,7 +181,7 @@ private fun TasksCard(tasks: List<PlantTask>) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 8.dp
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
@@ -189,7 +194,7 @@ private fun TasksCard(tasks: List<PlantTask>) {
                     text = stringResource(R.string.todays_tasks),
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = Color(0xFF1A212E)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "${tasks.size} Pending",
@@ -237,7 +242,7 @@ private fun TaskItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFF1F8E9).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -259,11 +264,11 @@ private fun TaskItem(
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF1A212E))
-            Text(text = subtitle, fontSize = 12.sp, color = Color.Gray)
+            Text(text = title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
         }
 
-        Text(text = time, fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+        Text(text = time, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontWeight = FontWeight.Medium)
     }
 }
 
@@ -281,7 +286,7 @@ private fun PlantItem(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 2.dp
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -292,7 +297,7 @@ private fun PlantItem(
                 Surface(
                     modifier = Modifier.size(56.dp),
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFF5F5F5)
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         if (imageRes != 0) {
@@ -315,12 +320,12 @@ private fun PlantItem(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = name, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF1A212E))
-                    Text(text = stringResource(R.string.days_grown, days), fontSize = 12.sp, color = Color.Gray)
+                    Text(text = name, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text(text = stringResource(R.string.days_grown, days), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(text = stringResource(R.string.next_watering), fontSize = 10.sp, color = Color.Gray)
+                    Text(text = stringResource(R.string.next_watering), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                     Text(
                         text = nextWatering,
                         fontWeight = FontWeight.Bold,
@@ -339,14 +344,14 @@ private fun PlantItem(
                         .weight(1f)
                         .height(8.dp),
                     color = PlantifyDarkGreen,
-                    trackColor = Color(0xFFEEEEEE),
+                    trackColor = MaterialTheme.colorScheme.outlineVariant,
                     strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "${(progress * 100).toInt()}%",
                     fontSize = 12.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
         }
