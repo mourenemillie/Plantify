@@ -5,12 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.plantify.data.Plant
 import com.example.plantify.data.PlantRepository
 import com.example.plantify.data.PlantTask
+import com.example.plantify.data.ScheduleRepository
 import com.example.plantify.data.TaskType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 class HomeViewModel : ViewModel() {
 
@@ -38,18 +39,30 @@ class HomeViewModel : ViewModel() {
                         nextWatering = nextWatering
                     )
                 }
-                _tasks.value = entries
-                    .filter { entry ->
-                        val currentDay = PlantRepository.calcCurrentDay(entry)
-                        currentDay % 2 == 0
-                    }
-                    .map { entry ->
+            }
+        }
+
+        viewModelScope.launch {
+            ScheduleRepository.scheduleGroups.collect { groups ->
+                val todayGroup = groups.find { it.date.startsWith("Today") }
+                if (todayGroup == null) {
+                    _tasks.value = emptyList()
+                    return@collect
+                }
+
+                _tasks.value = todayGroup.items
+                    .filter { !it.isDone }
+                    .map { item ->
+                        val type = when (item.title) {
+                            "Fertilizing" -> TaskType.FERTILIZING
+                            else -> TaskType.WATERING
+                        }
                         PlantTask(
-                            id = UUID.randomUUID().toString(),
-                            title = "Watering",
-                            subtitle = entry.name,
-                            time = "08:00 AM",
-                            type = TaskType.WATERING
+                            id = item.title + item.plantName,
+                            title = item.title,
+                            subtitle = item.plantName,
+                            time = item.time,
+                            type = type
                         )
                     }
             }

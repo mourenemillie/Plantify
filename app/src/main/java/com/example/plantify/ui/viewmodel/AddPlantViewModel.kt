@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.plantify.data.PlantEntry
 import com.example.plantify.data.PlantRepository
+import com.example.plantify.data.ScheduleRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -123,6 +124,8 @@ class AddPlantViewModel : ViewModel() {
 
                 val result = callGroqApi(prompt)
                 _aiState.value = AiRecommendationState.Success(result)
+                val plantName = plant.name
+                ScheduleRepository.addScheduleFromAi(plantName, result)
             } catch (e: Exception) {
                 val msg = e.message ?: "Unknown error"
                 android.util.Log.e("GroqAPI", "Error: $msg", e)
