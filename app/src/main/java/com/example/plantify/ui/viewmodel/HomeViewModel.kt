@@ -1,8 +1,13 @@
 package com.example.plantify.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+<<<<<<< HEAD
+=======
+import androidx.lifecycle.viewModelScope
+>>>>>>> origin/Hasna
 import com.example.plantify.R
 import com.example.plantify.data.Plant
+import com.example.plantify.data.PlantRepository
 import com.example.plantify.data.PlantTask
 import com.example.plantify.data.TaskType
 import com.example.plantify.data.repository.PlantRepository
@@ -14,8 +19,13 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+<<<<<<< HEAD
 import java.util.UUID
 import androidx.lifecycle.viewModelScope
+=======
+import kotlinx.coroutines.launch
+import java.util.UUID
+>>>>>>> origin/Hasna
 
 class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() {
 
@@ -32,6 +42,7 @@ class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() 
         loadRealData()
     }
 
+<<<<<<< HEAD
     private fun loadMockData() {
         _plants.value = listOf(
             Plant(
@@ -59,6 +70,10 @@ class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() 
                 imageRes = R.drawable.ic_plant_spinach
             )
         )
+=======
+    fun updateWeather(condition: String) {
+        _weatherCondition.value = condition
+>>>>>>> origin/Hasna
     }
 
     private fun loadRealData() {
@@ -139,6 +154,40 @@ class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() 
             (diff / (1000 * 60 * 60 * 24)).toInt()
         } catch (e: Exception) {
             0
+        }
+    }
+        viewModelScope.launch {
+            PlantRepository.plants.collect { entries ->
+                _plants.value = entries.map { entry ->
+                    val currentDay = PlantRepository.calcCurrentDay(entry)
+                    val progress = PlantRepository.calcProgress(entry)
+                    val nextWatering = when {
+                        currentDay % 2 == 0 -> "Today"
+                        else -> "Tomorrow"
+                    }
+                    Plant(
+                        id = entry.id,
+                        name = entry.name,
+                        daysGrown = currentDay,
+                        progress = progress,
+                        nextWatering = nextWatering
+                    )
+                }
+                _tasks.value = entries
+                    .filter { entry ->
+                        val currentDay = PlantRepository.calcCurrentDay(entry)
+                        currentDay % 2 == 0
+                    }
+                    .map { entry ->
+                        PlantTask(
+                            id = UUID.randomUUID().toString(),
+                            title = "Watering",
+                            subtitle = entry.name,
+                            time = "08:00 AM",
+                            type = TaskType.WATERING
+                        )
+                    }
+            }
         }
     }
 }

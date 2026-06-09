@@ -70,11 +70,16 @@ fun PlantifyTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
+<<<<<<< HEAD
             window.statusBarColor = if (darkTheme) {
                 android.graphics.Color.parseColor("#121212")
             } else {
                 PlantifyMediumGreen.toArgb()
             }
+=======
+            window.statusBarColor = Color.Transparent.toArgb()
+            window.navigationBarColor = Color.Transparent.toArgb()
+>>>>>>> origin/Hasna
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }

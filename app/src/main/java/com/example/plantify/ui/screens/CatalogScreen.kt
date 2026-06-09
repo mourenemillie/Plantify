@@ -17,7 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -42,7 +41,11 @@ fun CatalogScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
 
     Scaffold(
+<<<<<<< HEAD
         containerColor = MaterialTheme.colorScheme.background,
+=======
+        containerColor = Color(0xFFF8F9FA),
+>>>>>>> origin/Hasna
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddPlantClick,
@@ -59,7 +62,11 @@ fun CatalogScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+<<<<<<< HEAD
                 .background(MaterialTheme.colorScheme.background)
+=======
+                .background(Color(0xFFF8F9FA))
+>>>>>>> origin/Hasna
         ) {
             Box(
                 modifier = Modifier
@@ -86,9 +93,10 @@ fun CatalogScreen(
             }
 
             Column(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
+                modifier = Modifier.padding(horizontal = 24.dp)
             ) {
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Modern Search Bar
                 Surface(
                     shape = RoundedCornerShape(16.dp),
@@ -115,11 +123,20 @@ fun CatalogScreen(
                     )
                 }
 
+<<<<<<< HEAD
                 Spacer(modifier = Modifier.height(16.dp))
 
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 80.dp)
+=======
+                Spacer(modifier = Modifier.height(24.dp))
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 80.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+>>>>>>> origin/Hasna
                 ) {
                     items(plants) { plant ->
                         CatalogPlantItem(
@@ -127,7 +144,10 @@ fun CatalogScreen(
                             onAddClick = onAddPlantClick,
                             onItemClick = { onPlantClick(plant.name) }
                         )
+<<<<<<< HEAD
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+=======
+>>>>>>> origin/Hasna
                     }
                 }
             }
@@ -136,7 +156,11 @@ fun CatalogScreen(
 }
 
 @Composable
+<<<<<<< HEAD
 fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> Unit = {}) {
+=======
+fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> Unit) {
+>>>>>>> origin/Hasna
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -152,7 +176,7 @@ fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: 
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Image Container with soft background
+            // Image Container
             Box(
                 modifier = Modifier
                     .size(64.dp)
@@ -192,6 +216,16 @@ fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: 
                             fontWeight = FontWeight.Medium
                         )
                     }
+<<<<<<< HEAD
+=======
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "${plant.duration} • ${plant.watering}",
+                        fontSize = 12.sp,
+                        color = PlantifyTextGray,
+                        fontWeight = FontWeight.Medium
+                    )
+>>>>>>> origin/Hasna
                 }
             }
 
