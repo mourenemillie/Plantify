@@ -36,9 +36,8 @@ fun GrowthProgressScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        // Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -99,8 +98,8 @@ fun GrowthCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -110,13 +109,22 @@ fun GrowthCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "$plantEmoji $plantName", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text(text = "Day $currentDay / $totalDays", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "$plantEmoji $plantName",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Day $currentDay / $totalDays",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Timeline
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -128,7 +136,7 @@ fun GrowthCard(
                             modifier = Modifier
                                 .size(14.dp)
                                 .background(
-                                    if (index <= currentStageIndex) Color(0xFF27AE60) else Color(0xFFBDC3C7),
+                                    if (index <= currentStageIndex) Color(0xFF27AE60) else MaterialTheme.colorScheme.outline,
                                     CircleShape
                                 )
                                 .padding(2.dp)
@@ -137,12 +145,17 @@ fun GrowthCard(
                                 Box(modifier = Modifier.fillMaxSize().background(Color.White, CircleShape))
                             }
                         }
-                        Text(text = stage, fontSize = 10.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
+                        Text(
+                            text = stage,
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
                     }
                     if (index < stages.size - 1) {
                         HorizontalDivider(
                             modifier = Modifier.weight(1f).padding(bottom = 14.dp),
-                            color = if (index < currentStageIndex) Color(0xFF27AE60) else Color(0xFFBDC3C7),
+                            color = if (index < currentStageIndex) Color(0xFF27AE60) else MaterialTheme.colorScheme.outline,
                             thickness = 2.dp
                         )
                     }
@@ -151,7 +164,6 @@ fun GrowthCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Progress Bar
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier
@@ -159,30 +171,29 @@ fun GrowthCard(
                     .height(8.dp)
                     .clip(CircleShape),
                 color = Color(0xFF27AE60),
-                trackColor = Color(0xFFE0E0E0)
+                trackColor = MaterialTheme.colorScheme.outlineVariant
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Box Estimasi Panen
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp)
-                    .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
                     .padding(horizontal = 12.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(text = "Estimated harvest", fontSize = 14.sp, color = Color.Gray)
-                    Text(text = "~$estimateDate", fontSize = 14.sp, color = Color.Gray)
+                    Text(text = "Estimated harvest", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                    Text(text = "~$estimateDate", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedButton(
-                onClick = { /* Action */ },
+                onClick = { },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = PlantifyMediumGreen),

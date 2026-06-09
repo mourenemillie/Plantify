@@ -37,6 +37,7 @@ fun CatalogScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddPlantClick,
@@ -52,7 +53,7 @@ fun CatalogScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             Box(
                 modifier = Modifier
@@ -75,12 +76,14 @@ fun CatalogScreen(
                     value = searchQuery,
                     onValueChange = { viewModel.onSearchQueryChanged(it) },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Search plants...", color = Color.Gray) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                    placeholder = { Text("Search plants...", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)) },
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color.LightGray,
-                        focusedBorderColor = PlantifyMediumGreen
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedBorderColor = PlantifyMediumGreen,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface
                     ),
                     singleLine = true
                 )
@@ -89,11 +92,11 @@ fun CatalogScreen(
 
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 80.dp) // Extra padding for FAB
+                    contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
                     items(plants) { plant ->
-                        PlantItem(plant, onAddPlantClick)
-                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                        CatalogPlantItem(plant, onAddPlantClick)
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                 }
             }
@@ -102,7 +105,7 @@ fun CatalogScreen(
 }
 
 @Composable
-fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit) {
+fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -112,7 +115,7 @@ fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit) {
         Box(
             modifier = Modifier
                 .size(48.dp)
-                .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp)),
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             if (plant.imageRes != 0) {
@@ -132,7 +135,8 @@ fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit) {
             Text(
                 text = plant.name,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onBackground
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(
@@ -150,7 +154,7 @@ fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit) {
                 Text(
                     text = " • ${plant.duration} • ${plant.watering}",
                     fontSize = 12.sp,
-                    color = PlantifyTextGray
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
             }
         }
@@ -164,7 +168,7 @@ fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.Add,
                 contentDescription = "Add",
-                tint = Color(0xFF0D674E),
+                tint = PlantifyMediumGreen,
                 modifier = Modifier.size(20.dp)
             )
         }

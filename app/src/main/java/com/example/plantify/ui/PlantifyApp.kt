@@ -1,6 +1,5 @@
 package com.example.plantify.ui
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
@@ -11,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -31,6 +31,7 @@ import com.example.plantify.ui.screens.ProfileScreen
 import com.example.plantify.ui.screens.AddPlantScreen
 import com.example.plantify.ui.screens.PlantDetailScreen
 import com.example.plantify.ui.screens.GrowthProgressScreen
+import com.example.plantify.ui.viewmodel.ProfileViewModel
 
 sealed class Screen(val route: String, val title: String, val iconRes: Int = 0) {
     object Splash : Screen("splash", "Splash")
@@ -48,7 +49,7 @@ sealed class Screen(val route: String, val title: String, val iconRes: Int = 0) 
 }
 
 @Composable
-fun PlantifyApp() {
+fun PlantifyApp(profileViewModel: ProfileViewModel = viewModel()) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -67,7 +68,7 @@ fun PlantifyApp() {
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar(
-                    containerColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 8.dp
                 ) {
                     bottomNavItems.forEach { screen ->
@@ -100,9 +101,9 @@ fun PlantifyApp() {
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = PlantifyMediumGreen,
                                 selectedTextColor = PlantifyMediumGreen,
-                                unselectedIconColor = Color(0xFF9CA3AF),
-                                unselectedTextColor = Color(0xFF9CA3AF),
-                                indicatorColor = Color.White
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                indicatorColor = Color.Transparent
                             )
                         )
                     }
@@ -125,7 +126,6 @@ fun PlantifyApp() {
             composable(Screen.Home.route) {
                 HomeScreen(
                     onPlantClick = {
-                        // Langsung diarahkan ke rute GrowthProgress
                         navController.navigate(Screen.GrowthProgress.route)
                     },
                     onNotificationClick = {
@@ -146,7 +146,7 @@ fun PlantifyApp() {
                 GrowthProgressScreen()
             }
             composable(Screen.Profile.route) {
-                ProfileScreen()
+                ProfileScreen(viewModel = profileViewModel)
             }
             composable(Screen.AddPlant.route) {
                 AddPlantScreen()

@@ -32,7 +32,7 @@ fun AddPlantScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -85,7 +85,7 @@ fun AddPlantScreen(
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
-                        tint = Color.Black,
+                        tint = Color(0xFF0D674E),
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -145,18 +145,23 @@ fun InputField(
     readOnly: Boolean = true
 ) {
     Column {
-        Text(text = label, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        Text(
+            text = label,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(text = placeholder, color = Color.Gray) },
+            placeholder = { Text(text = placeholder, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)) },
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = PlantifyLightGreen.copy(alpha = 0.3f),
-                focusedContainerColor = PlantifyLightGreen.copy(alpha = 0.3f),
-                unfocusedBorderColor = Color.LightGray,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                 focusedBorderColor = PlantifyMediumGreen
             ),
             readOnly = readOnly
