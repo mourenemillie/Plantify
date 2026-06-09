@@ -32,9 +32,8 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        // Header sama kayak screen lain
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -70,7 +69,7 @@ fun ScheduleSection(group: ScheduleGroup, onToggle: (ScheduleItem) -> Unit) {
             text = group.date,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
             modifier = Modifier.padding(bottom = 12.dp)
         )
         group.items.forEach { item ->
@@ -85,8 +84,8 @@ fun ScheduleCard(item: ScheduleItem, onToggle: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, Color(0xFFF0F0F0), RoundedCornerShape(16.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -96,7 +95,6 @@ fun ScheduleCard(item: ScheduleItem, onToggle: () -> Unit) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Clickable circle checkbox
             Box(
                 modifier = Modifier
                     .size(24.dp)
@@ -104,7 +102,7 @@ fun ScheduleCard(item: ScheduleItem, onToggle: () -> Unit) {
                         if (item.isDone) {
                             Modifier.background(PlantifyMediumGreen, CircleShape)
                         } else {
-                            Modifier.border(2.dp, Color.LightGray, CircleShape)
+                            Modifier.border(2.dp, MaterialTheme.colorScheme.outline, CircleShape)
                         }
                     )
                     .clickable { onToggle() },
@@ -143,19 +141,19 @@ fun ScheduleCard(item: ScheduleItem, onToggle: () -> Unit) {
                     text = item.title,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = item.plantName,
                     fontSize = 13.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
 
             Text(
                 text = item.time,
                 fontSize = 12.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
         }
     }

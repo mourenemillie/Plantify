@@ -1,7 +1,6 @@
 package com.example.plantify.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -244,7 +243,6 @@ fun AddPlantScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Tombol Get AI Recommendation
                     OutlinedButton(
                         onClick = { viewModel.getAiRecommendation() },
                         modifier = Modifier.fillMaxWidth(),
@@ -263,7 +261,6 @@ fun AddPlantScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Tombol Use AI Schedule
             Button(
                 onClick = { scope.launch { viewModel.savePlant() } },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
@@ -277,7 +274,6 @@ fun AddPlantScreen(
                 Text("Use AI Schedule", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
 
-            // Tombol Customize Manually
             OutlinedButton(
                 onClick = { scope.launch { viewModel.savePlant() } },
                 modifier = Modifier.fillMaxWidth().height(52.dp),

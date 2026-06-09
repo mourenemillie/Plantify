@@ -37,9 +37,8 @@ fun GrowthProgressScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        // Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,8 +107,8 @@ fun GrowthCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -182,7 +181,7 @@ fun GrowthCard(
                     .height(8.dp)
                     .clip(CircleShape),
                 color = Color(0xFF27AE60),
-                trackColor = Color(0xFFE0E0E0)
+                trackColor = MaterialTheme.colorScheme.outlineVariant
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -192,7 +191,7 @@ fun GrowthCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp)
-                    .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
                     .padding(horizontal = 12.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
