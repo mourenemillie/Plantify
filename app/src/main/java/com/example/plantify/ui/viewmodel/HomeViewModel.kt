@@ -1,7 +1,7 @@
 package com.example.plantify.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.example.plantify.R
 import com.example.plantify.data.Plant
 import com.example.plantify.data.PlantTask
 import com.example.plantify.data.TaskType
@@ -31,9 +31,36 @@ class HomeViewModel(private val plantRepository: PlantRepository) : ViewModel() 
         loadRealData()
     }
 
-    fun updateWeather(condition: String) {
-        _weatherCondition.value = condition
-    }
+    private fun loadMockData() {
+        _plants.value = listOf(
+            Plant(
+                id = UUID.randomUUID().toString(),
+                name = "Cherry Tomato",
+                daysGrown = 15,
+                progress = 0.85f,
+                nextWatering = "Today",
+                imageUrl = "https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=200&h=200&fit=crop",
+                imageRes = R.drawable.ic_plant_tomato
+            ),
+            Plant(
+                id = UUID.randomUUID().toString(),
+                name = "Red Chili",
+                daysGrown = 22,
+                progress = 0.92f,
+                nextWatering = "Tomorrow",
+                imageUrl = "https://images.unsplash.com/photo-1588252303782-cb80119abd6e?w=200&h=200&fit=crop",
+                imageRes = R.drawable.ic_plant_red_chili
+            ),
+            Plant(
+                id = UUID.randomUUID().toString(),
+                name = "Spinach",
+                daysGrown = 8,
+                progress = 0.45f,
+                nextWatering = "Today",
+                imageUrl = "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=200&h=200&fit=crop",
+                imageRes = R.drawable.ic_plant_spinach
+            )
+        )
 
     private fun loadRealData() {
         viewModelScope.launch {

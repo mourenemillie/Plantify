@@ -39,7 +39,7 @@ fun CatalogScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
 
     Scaffold(
-        containerColor = Color(0xFFF8F9FA),
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddPlantClick,
@@ -56,6 +56,7 @@ fun CatalogScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             Box(
                 modifier = Modifier
@@ -109,15 +110,31 @@ fun CatalogScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { viewModel.onSearchQueryChanged(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Search plants...", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)) },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedBorderColor = PlantifyMediumGreen,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 80.dp), // Extra padding for FAB
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
                     items(plants) { plant ->
-                        PlantItem(plant, onAddClick = onAddPlantClick, onItemClick = { onPlantClick(plant.name) })
+                        CatalogPlantItem(plant, onAddPlantClick)
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                 }
             }
@@ -126,8 +143,8 @@ fun CatalogScreen(
 }
 
 @Composable
-fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> Unit) {
-    Surface(
+fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onItemClick() },
@@ -137,9 +154,9 @@ fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> U
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .size(48.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center
         ) {
             // Image Container with soft background
             Box(
@@ -162,28 +179,18 @@ fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> U
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = plant.name,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color(0xFF1A212E)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        color = plant.difficultyColor.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(6.dp)
-                    ) {
-                        Text(
-                            text = plant.difficulty,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontSize = 11.sp,
-                            color = plant.difficultyColor,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = plant.name,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    color = plant.difficultyColor,
+                    shape = RoundedCornerShape(4.dp)
+                ) {
                     Text(
                         text = "${plant.duration} • ${plant.watering}",
                         fontSize = 12.sp,
@@ -191,21 +198,26 @@ fun PlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> U
                         fontWeight = FontWeight.Medium
                     )
                 }
-            }
-
-            IconButton(
-                onClick = onAddClick,
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(PlantifyMediumGreen, CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add",
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp)
+                Text(
+                    text = " • ${plant.duration} • ${plant.watering}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
             }
+        }
+
+        IconButton(
+            onClick = onAddClick,
+            modifier = Modifier
+                .size(32.dp)
+                .border(1.dp, Color(0xFFB9F1E1), CircleShape)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add",
+                tint = PlantifyMediumGreen,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
