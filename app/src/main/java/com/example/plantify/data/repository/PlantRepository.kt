@@ -7,7 +7,8 @@ import com.example.plantify.data.local.entity.TaskScheduleEntity
 import com.example.plantify.data.remote.SupabaseConfig
 import com.example.plantify.data.remote.model.KebunkuDto
 import com.example.plantify.data.remote.model.TanamanKatalogDto
-import io.github.jan.supabase.postgrest.from
+import com.example.plantify.data.remote.model.JadwalTugasDto
+import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
@@ -22,10 +23,25 @@ class PlantRepository(
     val myPlants: Flow<List<MyPlantEntity>> = plantDao.getMyPlants()
     val allSchedules: Flow<List<TaskScheduleEntity>> = plantDao.getAllSchedules()
 
-    suspend fun addPlant(plant: MyPlantEntity): Long {
-        val id = plantDao.insertMyPlant(plant)
-        // Optionally trigger immediate sync or let WorkManager handle it
-        return id
+    suspend fun getCatalogById(id: Int): PlantCatalogEntity? = plantDao.getCatalogById(id)
+
+    suspend fun addPlantType(plant: PlantCatalogEntity) {
+        plantDao.insertSingleCatalog(plant)
+        syncWithSupabase()
+    }
+
+    suspend fun addPlantWithSchedules(plant: MyPlantEntity, schedules: List<TaskScheduleEntity>) {
+        val id = plantDao.insertMyPlant(plant).toInt()
+        schedules.forEach {
+            plantDao.insertSchedule(it.copy(id_kebun = id))
+        }
+        // Sync after adding
+        syncWithSupabase()
+    }
+
+    suspend fun updateSchedule(schedule: TaskScheduleEntity) {
+        plantDao.updateSchedule(schedule)
+        syncWithSupabase()
     }
 
     suspend fun syncWithSupabase() {
@@ -33,7 +49,8 @@ class PlantRepository(
         
         // 1. Sync Catalog (Pull from Supabase)
         try {
-            val remoteCatalog = supabase.from("tanaman_katalog").select().decodeList<TanamanKatalogDto>()
+            val response = supabase.postgrest.from("tanaman_katalog").select()
+            val remoteCatalog = response.decodeAs<List<TanamanKatalogDto>>()
             val localCatalog = remoteCatalog.map {
                 PlantCatalogEntity(
                     id_tanaman = it.id_tanaman ?: 0,
@@ -50,10 +67,11 @@ class PlantRepository(
             e.printStackTrace()
         }
 
-        // 2. Sync My Plants (Push to Supabase)
+        // 2. Sync My Plants (Bidirectional / Upsert)
         try {
+            // Push local to remote
             val localPlants = plantDao.getMyPlants().first()
-            val dtos = localPlants.map {
+            val plantDtos = localPlants.map {
                 KebunkuDto(
                     id_kebun = if (it.id_kebun == 0) null else it.id_kebun,
                     id_tanaman = it.id_tanaman,
@@ -64,14 +82,27 @@ class PlantRepository(
                     status_tanaman = it.status_tanaman
                 )
             }
-            if (dtos.isNotEmpty()) {
-                supabase.from("kebunku").upsert(dtos)
+            if (plantDtos.isNotEmpty()) {
+                supabase.postgrest.from("kebunku").upsert(plantDtos)
+            }
+
+            // Sync Schedules
+            val localSchedules = plantDao.getAllSchedules().first()
+            val scheduleDtos = localSchedules.map {
+                JadwalTugasDto(
+                    id_tugas = if (it.id_tugas == 0) null else it.id_tugas,
+                    id_kebun = it.id_kebun,
+                    jenis_tugas = it.jenis_tugas,
+                    waktu_eksekusi = it.waktu_eksekusi,
+                    status_tugas = it.status_tugas
+                )
+            }
+            if (scheduleDtos.isNotEmpty()) {
+                supabase.postgrest.from("jadwal_tugas").upsert(scheduleDtos)
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        
-        // Add similar logic for tasks and notifications if needed
     }
 
     suspend fun updateSchedule(schedule: TaskScheduleEntity) {

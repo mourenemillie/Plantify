@@ -1,51 +1,39 @@
 package com.example.plantify.ui.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.plantify.data.local.PlantDatabase
-import com.example.plantify.data.remote.AiService
-import com.example.plantify.data.remote.LocationApiClient
-import com.example.plantify.data.remote.NominatimApiClient
-import com.example.plantify.data.remote.BmkgApiClient
-import com.example.plantify.data.repository.LocationRepository
 import com.example.plantify.data.repository.PlantRepository
 
-class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+class ViewModelFactory(private val repository: PlantRepository) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        val database = PlantDatabase.getDatabase(context)
-        val aiService = AiService()
-        val plantRepository = PlantRepository(database.plantDao(), aiService)
-
-        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return HomeViewModel() as T
+        return when {
+            modelClass.isAssignableFrom(CatalogViewModel::class.java) -> {
+                CatalogViewModel(repository) as T
+            }
+            modelClass.isAssignableFrom(AddPlantViewModel::class.java) -> {
+                AddPlantViewModel(repository) as T
+            }
+            modelClass.isAssignableFrom(HomeViewModel::class.java) -> {
+                HomeViewModel(repository) as T
+            }
+            modelClass.isAssignableFrom(ScheduleViewModel::class.java) -> {
+                ScheduleViewModel(repository) as T
+            }
+            modelClass.isAssignableFrom(GrowthProgressViewModel::class.java) -> {
+                GrowthProgressViewModel(repository) as T
+            }
+            modelClass.isAssignableFrom(ProfileViewModel::class.java) -> {
+                ProfileViewModel(repository) as T
+            }
+            modelClass.isAssignableFrom(AddPlantTypeViewModel::class.java) -> {
+                AddPlantTypeViewModel(repository) as T
+            }
+            // Menambahkan AlertsViewModel dari branch Hasna untuk halaman notifikasi
+            modelClass.isAssignableFrom(AlertsViewModel::class.java) -> {
+                AlertsViewModel(repository) as T
+            }
+            else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
-        if (modelClass.isAssignableFrom(ScheduleViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return ScheduleViewModel(plantRepository) as T
-        }
-        if (modelClass.isAssignableFrom(GrowthProgressViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return GrowthProgressViewModel(plantRepository) as T
-        }
-        if (modelClass.isAssignableFrom(LocationViewModel::class.java)) {
-            val locationRepository = LocationRepository(
-                LocationApiClient.instance,
-                NominatimApiClient.instance,
-                BmkgApiClient.instance
-            )
-            @Suppress("UNCHECKED_CAST")
-            return LocationViewModel(locationRepository, plantRepository) as T
-        }
-        if (modelClass.isAssignableFrom(AddPlantViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return AddPlantViewModel(plantRepository) as T
-        }
-        if (modelClass.isAssignableFrom(AlertsViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return AlertsViewModel(plantRepository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
 }
