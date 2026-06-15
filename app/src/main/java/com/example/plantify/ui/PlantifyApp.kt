@@ -1,16 +1,19 @@
 package com.example.plantify.ui
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -20,17 +23,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.plantify.R
+import com.example.plantify.data.local.PlantDatabase
+import com.example.plantify.data.repository.PlantRepository
 import com.example.plantify.ui.theme.PlantifyMediumGreen
-
-import com.example.plantify.ui.screens.HomeScreen
-import com.example.plantify.ui.screens.SplashScreen
-import com.example.plantify.ui.screens.CatalogScreen
-import com.example.plantify.ui.screens.ScheduleScreen
-import com.example.plantify.ui.screens.AlertsScreen
-import com.example.plantify.ui.screens.ProfileScreen
-import com.example.plantify.ui.screens.AddPlantScreen
-import com.example.plantify.ui.screens.PlantDetailScreen
-import com.example.plantify.ui.screens.GrowthProgressScreen
+import com.example.plantify.ui.screens.*
+import com.example.plantify.ui.viewmodel.HomeViewModel
+import com.example.plantify.ui.viewmodel.ViewModelFactory
 
 sealed class Screen(val route: String, val title: String, val iconRes: Int = 0) {
     object Splash : Screen("splash", "Splash")
@@ -39,18 +37,29 @@ sealed class Screen(val route: String, val title: String, val iconRes: Int = 0) 
     object Schedule : Screen("schedule", "Schedule", R.drawable.ic_nav_schedule)
     object Growth : Screen("growth", "Growth", R.drawable.ic_nav_growth)
     object Profile : Screen("profile", "Profile", R.drawable.ic_nav_profile)
-    object AddPlant : Screen("add_plant", "Add Plant")
+    object AddPlant : Screen("add_plant?plantId={plantId}", "Add Plant") {
+        fun createRoute(plantId: Int? = null) = if (plantId != null) "add_plant?plantId=$plantId" else "add_plant"
+    }
+    object AddPlantType : Screen("add_plant_type", "Add Plant Type")
     object PlantDetail : Screen("plant_detail/{plantId}", "Plant Detail") {
         fun createRoute(plantId: String) = "plant_detail/$plantId"
     }
     object GrowthProgress : Screen("growth_progress", "Growth Progress")
+    object Alerts : Screen("alerts", "Alerts")
 }
 
 @Composable
 fun PlantifyApp() {
+    val context = LocalContext.current
+    val database = remember { PlantDatabase.getDatabase(context) }
+    val repository = remember { PlantRepository(database.plantDao(), com.example.plantify.data.remote.AiService()) }
+    val viewModelFactory = remember { ViewModelFactory(repository) }
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+
+    val homeViewModel: HomeViewModel = viewModel(factory = viewModelFactory)
 
     val bottomNavItems = listOf(
         Screen.Home,
@@ -66,7 +75,7 @@ fun PlantifyApp() {
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar(
-                    containerColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 8.dp
                 ) {
                     bottomNavItems.forEach { screen ->
@@ -99,9 +108,9 @@ fun PlantifyApp() {
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = PlantifyMediumGreen,
                                 selectedTextColor = PlantifyMediumGreen,
-                                unselectedIconColor = Color(0xFF9CA3AF),
-                                unselectedTextColor = Color(0xFF9CA3AF),
-                                indicatorColor = Color.White
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                indicatorColor = Color.Transparent
                             )
                         )
                     }
@@ -123,29 +132,65 @@ fun PlantifyApp() {
             }
             composable(Screen.Home.route) {
                 HomeScreen(
+                    viewModel = homeViewModel,
                     onPlantClick = {
-                        // Langsung diarahkan ke rute GrowthProgress
                         navController.navigate(Screen.GrowthProgress.route)
+                    },
+                    onNotificationClick = {
+                        navController.navigate(Screen.Alerts.route)
                     }
                 )
             }
             composable(Screen.Catalog.route) {
                 CatalogScreen(
-                    onAddPlantClick = { navController.navigate(Screen.AddPlant.route) },
+                    viewModel = viewModel(factory = viewModelFactory),
+                    onAddNewTypeClick = {
+                        navController.navigate(Screen.AddPlantType.route)
+                    },
+                    onAddPlantClick = { id ->
+                        navController.navigate(Screen.AddPlant.createRoute(id))
+                    },
                     onPlantClick = { plantId -> navController.navigate(Screen.PlantDetail.createRoute(plantId)) }
                 )
             }
             composable(Screen.Schedule.route) {
-                ScheduleScreen()
+                ScheduleScreen(
+                    viewModel = viewModel(factory = viewModelFactory)
+                )
             }
             composable(Screen.Growth.route) {
-                GrowthProgressScreen()
+                GrowthProgressScreen(
+                    viewModel = viewModel(factory = viewModelFactory)
+                )
             }
             composable(Screen.Profile.route) {
-                ProfileScreen()
+                ProfileScreen(
+                    viewModel = viewModel(factory = viewModelFactory),
+                    onNotificationClick = {
+                        navController.navigate(Screen.Alerts.route)
+                    }
+                )
             }
-            composable(Screen.AddPlant.route) {
-                AddPlantScreen()
+            composable(
+                route = Screen.AddPlant.route,
+                arguments = listOf(navArgument("plantId") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                })
+            ) { backStackEntry ->
+                val plantId = backStackEntry.arguments?.getInt("plantId") ?: 0
+                AddPlantScreen(
+                    viewModel = viewModel(factory = viewModelFactory),
+                    preSelectedPlantId = plantId,
+                    onSuccess = { navController.navigateUp() }
+                )
+            }
+            composable(Screen.AddPlantType.route) {
+                AddPlantTypeScreen(
+                    viewModel = viewModel(factory = viewModelFactory),
+                    onBackClick = { navController.navigateUp() },
+                    onSuccess = { navController.navigateUp() }
+                )
             }
             composable(
                 route = Screen.PlantDetail.route,
@@ -154,11 +199,20 @@ fun PlantifyApp() {
                 val plantId = backStackEntry.arguments?.getString("plantId") ?: ""
                 PlantDetailScreen(
                     plantId = plantId,
+                    onBackClick = { navController.popBackStack() },
                     onGrowthProgressClick = { navController.navigate(Screen.GrowthProgress.route) }
                 )
             }
             composable(Screen.GrowthProgress.route) {
-                GrowthProgressScreen()
+                GrowthProgressScreen(
+                    viewModel = viewModel(factory = viewModelFactory)
+                )
+            }
+            composable(Screen.Alerts.route) {
+                AlertsScreen(
+                    viewModel = viewModel(factory = viewModelFactory),
+                    onBackClick = { navController.popBackStack() }
+                )
             }
         }
     }

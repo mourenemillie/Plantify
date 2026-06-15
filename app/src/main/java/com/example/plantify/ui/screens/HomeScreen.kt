@@ -1,5 +1,7 @@
 package com.example.plantify.ui.screens
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -21,27 +24,36 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.R
-import com.example.plantify.data.PlantTask
-import com.example.plantify.data.TaskType
+import com.example.plantify.data.local.entity.MyPlantEntity
+import com.example.plantify.data.local.entity.TaskScheduleEntity
 import com.example.plantify.ui.theme.*
 import com.example.plantify.ui.viewmodel.HomeViewModel
 
 @Composable
 fun HomeScreen(
+    // Parameter default diubah agar tidak menyebabkan error mismatch context
     viewModel: HomeViewModel = viewModel(),
-    onPlantClick: (String) -> Unit = {}
+    onPlantClick: (String) -> Unit = {},
+    onNotificationClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
-    val plants by viewModel.plants.collectAsState()
+    val plants by viewModel.myPlants.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
+
+    // Mengambil data cuaca wilayah tanaman dari ViewModel (Tanpa GPS)
+    val weather by viewModel.currentWeather.collectAsState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
     ) {
-        HomeHeader(plantCount = plants.size)
+        HomeHeader(
+            plantCount = plants.size,
+            weatherText = weather ?: "Pilih wilayah di Catalog...",
+            onNotificationClick = onNotificationClick
+        )
 
         Column(
             modifier = Modifier
@@ -56,7 +68,7 @@ fun HomeScreen(
                 text = stringResource(R.string.my_plants),
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A212E)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             )
 
@@ -64,11 +76,12 @@ fun HomeScreen(
 
             plants.forEach { plant ->
                 PlantItem(
-                    name = plant.name,
-                    days = plant.daysGrown,
-                    progress = plant.progress,
-                    nextWatering = plant.nextWatering,
-                    onClick = { onPlantClick(plant.id) }
+                    name = plant.nama_pot ?: "Plant",
+                    days = 0,
+                    progress = plant.progress_persen / 100f,
+                    nextWatering = plant.next_watering ?: "N/A",
+                    imageRes = 0,
+                    onClick = { onPlantClick(plant.id_kebun.toString()) }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -79,7 +92,11 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeHeader(plantCount: Int) {
+private fun HomeHeader(
+    plantCount: Int,
+    weatherText: String,
+    onNotificationClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -111,8 +128,7 @@ private fun HomeHeader(plantCount: Int) {
                 }
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Notification Icon
-                    IconButton(onClick = { /* notif action */ }) {
+                    IconButton(onClick = onNotificationClick) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_notifications),
                             contentDescription = "Notifications",
@@ -140,7 +156,6 @@ private fun HomeHeader(plantCount: Int) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Weather Widget
             Surface(
                 shape = RoundedCornerShape(20.dp),
                 color = Color.White.copy(alpha = 0.15f),
@@ -158,9 +173,9 @@ private fun HomeHeader(plantCount: Int) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.weather_sunny),
+                        text = weatherText,
                         color = Color.White,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -170,11 +185,11 @@ private fun HomeHeader(plantCount: Int) {
 }
 
 @Composable
-private fun TasksCard(tasks: List<PlantTask>) {
+private fun TasksCard(tasks: List<TaskScheduleEntity>) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 8.dp
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
@@ -187,7 +202,7 @@ private fun TasksCard(tasks: List<PlantTask>) {
                     text = stringResource(R.string.todays_tasks),
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = Color(0xFF1A212E)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "${tasks.size} Pending",
@@ -200,23 +215,23 @@ private fun TasksCard(tasks: List<PlantTask>) {
             Spacer(modifier = Modifier.height(16.dp))
 
             tasks.forEach { task ->
-                val iconRes = when (task.type) {
-                    TaskType.WATERING -> R.drawable.ic_water_drop
-                    TaskType.FERTILIZING -> R.drawable.ic_bolt
+                val iconRes = when (task.jenis_tugas) {
+                    "Watering" -> R.drawable.ic_water_drop
+                    "Fertilizing" -> R.drawable.ic_bolt
                     else -> R.drawable.ic_book
                 }
-                val iconTint = when (task.type) {
-                    TaskType.WATERING -> PlantifyWaterTeal
-                    TaskType.FERTILIZING -> PlantifyFertilizerAmber
+                val iconTint = when (task.jenis_tugas) {
+                    "Watering" -> PlantifyWaterTeal
+                    "Fertilizing" -> PlantifyFertilizerAmber
                     else -> PlantifyIconGreen
                 }
 
                 TaskItem(
                     iconRes = iconRes,
                     iconTint = iconTint,
-                    title = task.title,
-                    subtitle = task.subtitle,
-                    time = task.time
+                    title = task.jenis_tugas,
+                    subtitle = "Plant ID: ${task.id_kebun}",
+                    time = task.waktu_eksekusi
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -235,7 +250,7 @@ private fun TaskItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFF1F8E9).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -257,11 +272,11 @@ private fun TaskItem(
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF1A212E))
-            Text(text = subtitle, fontSize = 12.sp, color = Color.Gray)
+            Text(text = title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
         }
 
-        Text(text = time, fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+        Text(text = time, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontWeight = FontWeight.Medium)
     }
 }
 
@@ -271,6 +286,7 @@ private fun PlantItem(
     days: Int,
     progress: Float,
     nextWatering: String,
+    imageRes: Int,
     onClick: () -> Unit
 ) {
     Surface(
@@ -278,7 +294,7 @@ private fun PlantItem(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 2.dp
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -289,27 +305,35 @@ private fun PlantItem(
                 Surface(
                     modifier = Modifier.size(56.dp),
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFE8F5E9)
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_eco),
-                            contentDescription = null,
-                            tint = PlantifyMediumGreen,
-                            modifier = Modifier.size(28.dp)
-                        )
+                        if (imageRes != 0) {
+                            Image(
+                                painter = painterResource(id = imageRes),
+                                contentDescription = name,
+                                modifier = Modifier.size(36.dp)
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_eco),
+                                contentDescription = null,
+                                tint = PlantifyMediumGreen,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
                     }
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = name, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF1A212E))
-                    Text(text = stringResource(R.string.days_grown, days), fontSize = 12.sp, color = Color.Gray)
+                    Text(text = name, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text(text = stringResource(R.string.days_grown, days), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(text = stringResource(R.string.next_watering), fontSize = 10.sp, color = Color.Gray)
+                    Text(text = stringResource(R.string.next_watering), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                     Text(
                         text = nextWatering,
                         fontWeight = FontWeight.Bold,
@@ -328,14 +352,14 @@ private fun PlantItem(
                         .weight(1f)
                         .height(8.dp),
                     color = PlantifyDarkGreen,
-                    trackColor = Color(0xFFEEEEEE),
+                    trackColor = MaterialTheme.colorScheme.outlineVariant,
                     strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "${(progress * 100).toInt()}%",
                     fontSize = 12.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
         }

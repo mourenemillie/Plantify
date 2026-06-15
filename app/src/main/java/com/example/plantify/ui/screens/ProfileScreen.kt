@@ -1,6 +1,8 @@
 package com.example.plantify.ui.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,26 +25,48 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.R
 import com.example.plantify.ui.theme.*
 import com.example.plantify.ui.viewmodel.ProfileViewModel
+import androidx.appcompat.app.AppCompatDelegate
+import com.example.plantify.ui.theme.ThemeManager
+import androidx.core.os.LocaleListCompat
+import androidx.compose.ui.platform.LocalContext
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
 
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = viewModel()
+    viewModel: ProfileViewModel = viewModel(),
+    onNotificationClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
-    
+    val context = LocalContext.current
+
+    // Mengambil data pengguna dari database
+    val userName by viewModel.userName.collectAsState()
+    val memberSince by viewModel.memberSince.collectAsState()
     val plantsCount by viewModel.plantsCount.collectAsState()
     val daysActive by viewModel.daysActive.collectAsState()
     val tasksDone by viewModel.tasksDone.collectAsState()
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
+    val isDarkMode by ThemeManager.isDarkMode.collectAsState()
+
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    var showHelpDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
     ) {
-        ProfileHeader()
+        ProfileHeader(userName, memberSince)
 
         Column(
             modifier = Modifier
@@ -54,12 +78,20 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             SectionTitle(title = stringResource(R.string.section_settings))
-            SettingsSection(isDarkMode, onDarkModeChange = { viewModel.toggleDarkMode(it) })
+            SettingsSection(
+                isDarkMode = isDarkMode, 
+                onDarkModeChange = { ThemeManager.setDarkMode(context, it) },
+                onLanguageClick = { showLanguageDialog = true },
+                onNotificationClick = onNotificationClick
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             SectionTitle(title = stringResource(R.string.section_about))
-            AboutSection()
+            AboutSection(
+                onHelpClick = { showHelpDialog = true },
+                onAboutClick = { showAboutDialog = true }
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -68,10 +100,71 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(100.dp))
         }
     }
+
+    if (showLanguageDialog) {
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text(stringResource(R.string.choose_language), fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    TextButton(
+                        onClick = {
+                            ThemeManager.setLanguage(context, "en")
+                            showLanguageDialog = false
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("🇬🇧  " + stringResource(R.string.english), fontSize = 16.sp)
+                    }
+                    TextButton(
+                        onClick = {
+                            ThemeManager.setLanguage(context, "id")
+                            showLanguageDialog = false
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("🇮🇩  " + stringResource(R.string.indonesian), fontSize = 16.sp)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLanguageDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    if (showHelpDialog) {
+        AlertDialog(
+            onDismissRequest = { showHelpDialog = false },
+            title = { Text(stringResource(R.string.menu_help)) },
+            text = { Text("Contact support at support@plantify.com") },
+            confirmButton = {
+                TextButton(onClick = { showHelpDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    if (showAboutDialog) {
+        AlertDialog(
+            onDismissRequest = { showAboutDialog = false },
+            title = { Text(stringResource(R.string.menu_about)) },
+            text = { Text("Plantify version 1.0.0\nYour personal urban farming assistant.") },
+            confirmButton = {
+                TextButton(onClick = { showAboutDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 }
 
 @Composable
-private fun ProfileHeader() {
+private fun ProfileHeader(userName: String, memberSince: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -101,14 +194,14 @@ private fun ProfileHeader() {
 
             Column {
                 Text(
-                    text = stringResource(R.string.profile_name),
+                    text = userName,
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 )
                 Text(
-                    text = stringResource(R.string.member_since),
+                    text = memberSince,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.8f)
                 )
@@ -122,7 +215,7 @@ private fun StatsCard(plantsCount: Int, daysActive: Int, tasksDone: Int) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 8.dp
     ) {
         Row(
@@ -131,9 +224,9 @@ private fun StatsCard(plantsCount: Int, daysActive: Int, tasksDone: Int) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             StatItem(value = plantsCount.toString(), label = stringResource(R.string.stat_plants))
-            VerticalDivider(modifier = Modifier.height(40.dp), color = Color(0xFFF1F1F1))
+            VerticalDivider(modifier = Modifier.height(40.dp), color = MaterialTheme.colorScheme.outlineVariant)
             StatItem(value = daysActive.toString(), label = stringResource(R.string.stat_days_active))
-            VerticalDivider(modifier = Modifier.height(40.dp), color = Color(0xFFF1F1F1))
+            VerticalDivider(modifier = Modifier.height(40.dp), color = MaterialTheme.colorScheme.outlineVariant)
             StatItem(value = tasksDone.toString(), label = stringResource(R.string.stat_tasks_done))
         }
     }
@@ -146,12 +239,12 @@ private fun StatItem(value: String, label: String) {
             text = value,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = label,
             fontSize = 12.sp,
-            color = Color.Gray
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
     }
 }
@@ -163,59 +256,71 @@ private fun SectionTitle(title: String) {
         modifier = Modifier.padding(start = 4.dp, bottom = 12.dp),
         style = MaterialTheme.typography.labelLarge.copy(
             fontWeight = FontWeight.Bold,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
             letterSpacing = 1.sp
         )
     )
 }
 
 @Composable
-private fun SettingsSection(isDarkMode: Boolean, onDarkModeChange: (Boolean) -> Unit) {
+private fun SettingsSection(
+    isDarkMode: Boolean, 
+    onDarkModeChange: (Boolean) -> Unit,
+    onLanguageClick: () -> Unit,
+    onNotificationClick: () -> Unit
+) {
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = Color.White
+        color = MaterialTheme.colorScheme.surface
     ) {
         Column {
             ProfileMenuItem(
                 iconRes = R.drawable.ic_notifications,
                 title = stringResource(R.string.menu_notifications),
                 iconBgColor = PlantifyIconBlueBg,
-                iconTint = PlantifyIconBlue
+                iconTint = PlantifyIconBlue,
+                onClick = onNotificationClick
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F1F1))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
             ProfileMenuItem(
                 iconRes = R.drawable.ic_language,
                 title = stringResource(R.string.menu_language),
                 value = stringResource(R.string.menu_language_value),
                 iconBgColor = PlantifyIconOrangeBg,
-                iconTint = PlantifyIconOrange
+                iconTint = PlantifyIconOrange,
+                onClick = onLanguageClick
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F1F1))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
             DarkModeToggle(isDarkMode, onDarkModeChange)
         }
     }
 }
 
 @Composable
-private fun AboutSection() {
+private fun AboutSection(
+    onHelpClick: () -> Unit,
+    onAboutClick: () -> Unit
+) {
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = Color.White
+        color = MaterialTheme.colorScheme.surface
     ) {
         Column {
             ProfileMenuItem(
                 iconRes = R.drawable.ic_help,
                 title = stringResource(R.string.menu_help),
                 iconBgColor = PlantifyIconGreenBg,
-                iconTint = PlantifyIconGreen
+                iconTint = PlantifyIconGreen,
+                onClick = onHelpClick
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F1F1))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
             ProfileMenuItem(
                 iconRes = R.drawable.ic_info,
                 title = stringResource(R.string.menu_about),
                 value = stringResource(R.string.menu_about_version),
                 iconBgColor = PlantifyPurpleBg,
-                iconTint = PlantifyPurple
+                iconTint = PlantifyPurple,
+                onClick = onAboutClick
             )
         }
     }
@@ -227,11 +332,13 @@ private fun ProfileMenuItem(
     title: String,
     iconBgColor: Color,
     iconTint: Color,
-    value: String = ""
+    value: String = "",
+    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -252,13 +359,13 @@ private fun ProfileMenuItem(
         Text(
             text = title,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF333333),
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
         if (value.isNotEmpty()) {
             Text(
                 text = value,
-                color = Color.LightGray,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                 modifier = Modifier.padding(horizontal = 8.dp),
                 fontSize = 14.sp
             )
@@ -266,7 +373,7 @@ private fun ProfileMenuItem(
         Icon(
             painter = painterResource(id = R.drawable.ic_chevron_right),
             contentDescription = null,
-            tint = Color.LightGray,
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
             modifier = Modifier.size(20.dp)
         )
     }
@@ -297,7 +404,7 @@ private fun DarkModeToggle(isDark: Boolean, onCheckedChange: (Boolean) -> Unit) 
         Text(
             text = stringResource(R.string.menu_dark_mode),
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF333333),
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
         Switch(
@@ -316,7 +423,7 @@ private fun PromoCard() {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color(0xFFE8F5E9).copy(alpha = 0.5f),
+        color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, Color(0xFFC8E6C9))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {

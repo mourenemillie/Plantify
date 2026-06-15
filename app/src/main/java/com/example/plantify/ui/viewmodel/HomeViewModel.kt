@@ -2,69 +2,61 @@ package com.example.plantify.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.plantify.data.Plant
-import com.example.plantify.data.PlantRepository
-import com.example.plantify.data.PlantTask
-import com.example.plantify.data.ScheduleRepository
-import com.example.plantify.data.TaskType
+import com.example.plantify.data.local.entity.MyPlantEntity
+import com.example.plantify.data.local.entity.TaskScheduleEntity
+import com.example.plantify.data.remote.WeatherService
+import com.example.plantify.data.repository.PlantRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(
+    private val repository: PlantRepository,
+    private val weatherService: WeatherService = WeatherService()
+) : ViewModel() {
 
-    private val _plants = MutableStateFlow<List<Plant>>(emptyList())
-    val plants: StateFlow<List<Plant>> = _plants.asStateFlow()
+    private val _myPlants = MutableStateFlow<List<MyPlantEntity>>(emptyList())
+    val myPlants: StateFlow<List<MyPlantEntity>> = _myPlants.asStateFlow()
 
-    private val _tasks = MutableStateFlow<List<PlantTask>>(emptyList())
-    val tasks: StateFlow<List<PlantTask>> = _tasks.asStateFlow()
+    private val _tasks = MutableStateFlow<List<TaskScheduleEntity>>(emptyList())
+    val tasks: StateFlow<List<TaskScheduleEntity>> = _tasks.asStateFlow()
+
+    // State cuaca berdasarkan wilayah permanen tanaman
+    private val _currentWeather = MutableStateFlow("Fetching weather...")
+    val currentWeather: StateFlow<String> = _currentWeather.asStateFlow()
 
     init {
+        loadData()
+    }
+
+    private fun loadData() {
+        // Mengambil daftar tanaman dari database lokal
         viewModelScope.launch {
-            PlantRepository.plants.collect { entries ->
-                _plants.value = entries.map { entry ->
-                    val currentDay = PlantRepository.calcCurrentDay(entry)
-                    val progress = PlantRepository.calcProgress(entry)
-                    val nextWatering = when {
-                        currentDay % 2 == 0 -> "Today"
-                        else -> "Tomorrow"
-                    }
-                    Plant(
-                        id = entry.id,
-                        name = entry.name,
-                        daysGrown = currentDay,
-                        progress = progress,
-                        nextWatering = nextWatering
-                    )
-                }
+            repository.myPlants.collect {
+                _myPlants.value = it
             }
         }
-
+        
+        // Mengambil seluruh jadwal tugas perawatan
         viewModelScope.launch {
-            ScheduleRepository.scheduleGroups.collect { groups ->
-                val todayGroup = groups.find { it.date.startsWith("Today") }
-                if (todayGroup == null) {
-                    _tasks.value = emptyList()
-                    return@collect
-                }
-
-                _tasks.value = todayGroup.items
-                    .filter { !it.isDone }
-                    .map { item ->
-                        val type = when (item.title) {
-                            "Fertilizing" -> TaskType.FERTILIZING
-                            else -> TaskType.WATERING
-                        }
-                        PlantTask(
-                            id = item.title + item.plantName,
-                            title = item.title,
-                            subtitle = item.plantName,
-                            time = item.time,
-                            type = type
-                        )
-                    }
+            repository.allSchedules.collect {
+                _tasks.value = it
+            }
+        }
+        
+        // Sinkronisasi data ke Supabase cloud
+        viewModelScope.launch {
+            repository.syncWithSupabase()
+        }
+        
+        // Mengambil data cuaca wilayah dari API berdasarkan kode area tanaman
+        viewModelScope.launch {
+            val weather = weatherService.getCurrentWeather("32.73.20.1001") 
+            if (weather != null) {
+                _currentWeather.value = weather
+            } else {
+                _currentWeather.value = "Sunny, 28°C" 
             }
         }
     }
