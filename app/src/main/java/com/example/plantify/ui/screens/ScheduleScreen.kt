@@ -30,7 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel(factory = ViewModelFactory(LocalContext.current))) {
+fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel()) {
     val schedules by viewModel.allSchedules.collectAsState()
 
     Column(

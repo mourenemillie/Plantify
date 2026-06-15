@@ -153,30 +153,34 @@ class AddPlantViewModel(
         viewModelScope.launch {
             _isLoadingAi.value = true
             _aiRecommendation.value = "Fetching weather and generating recommendation..."
-            
+
             val weather = weatherService.getCurrentWeather(village.code)
             val result = aiService.generateCareSchedule(plant.nama_tanaman, "Normal", weather)
-            
+
             if (result != null) {
-                try {
-                    val json = JSONObject(result)
-                    _aiRecommendation.value = json.optString("recommendation_text", "Here is your care schedule.")
-                    val tasksJson = json.optJSONArray("tasks")
-                    val tasks = mutableListOf<TaskScheduleEntity>()
-                    if (tasksJson != null) {
-                        for (i in 0 until tasksJson.length()) {
-                            val obj = tasksJson.getJSONObject(i)
-                            tasks.add(TaskScheduleEntity(
-                                id_kebun = 0, 
-                                jenis_tugas = obj.getString("type"),
-                                waktu_eksekusi = obj.getString("time"),
-                                status_tugas = "Pending"
-                            ))
+                if (result.startsWith("ERROR:")) {
+                    _aiRecommendation.value = result
+                } else {
+                    try {
+                        val json = JSONObject(result)
+                        _aiRecommendation.value = json.optString("recommendation_text", "Here is your care schedule.")
+                        val tasksJson = json.optJSONArray("tasks")
+                        val tasks = mutableListOf<TaskScheduleEntity>()
+                        if (tasksJson != null) {
+                            for (i in 0 until tasksJson.length()) {
+                                val obj = tasksJson.getJSONObject(i)
+                                tasks.add(TaskScheduleEntity(
+                                    id_kebun = 0,
+                                    jenis_tugas = obj.getString("type"),
+                                    waktu_eksekusi = obj.getString("time"),
+                                    status_tugas = "Pending"
+                                ))
+                            }
                         }
+                        _aiTasks.value = tasks
+                    } catch (e: Exception) {
+                        _aiRecommendation.value = "Failed to parse AI response."
                     }
-                    _aiTasks.value = tasks
-                } catch (e: Exception) {
-                    _aiRecommendation.value = "Failed to parse AI response."
                 }
             } else {
                 _aiRecommendation.value = "Failed to get AI recommendation."
@@ -194,7 +198,7 @@ class AddPlantViewModel(
                 tanggal_mulai_tanam = _plantingDate.value,
                 nama_pot = _locationName.value,
                 progress_persen = 0f,
-                next_watering = _aiTasks.value.find { it.jenis_tugas == "Watering" }?.waktu_eksekusi,
+                next_watering = _aiTasks.value.find { it.jenis_tugas == "Watering" }?.waktu_eksekusi ?: "07:00 AM",
                 status_tanaman = "Growing"
             )
             repository.addPlantWithSchedules(plant, _aiTasks.value)
@@ -204,7 +208,7 @@ class AddPlantViewModel(
 
     fun savePlantManually(plantName: String, onComplete: () -> Unit) {
         viewModelScope.launch {
-            var idTanaman = 1 
+            var idTanaman = 1
             try {
                 val catalogList = repository.allCatalog.first()
                 val matched = catalogList.find { plantName.contains(it.nama_tanaman, ignoreCase = true) }
@@ -223,7 +227,7 @@ class AddPlantViewModel(
                 tanggal_mulai_tanam = dateStr,
                 nama_pot = plantName,
                 progress_persen = 0f,
-                next_watering = "",
+                next_watering = "07:00 AM",
                 status_tanaman = "Sehat"
             )
 

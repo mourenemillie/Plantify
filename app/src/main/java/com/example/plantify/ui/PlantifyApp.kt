@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -29,7 +28,6 @@ import com.example.plantify.data.repository.PlantRepository
 import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.screens.*
 import com.example.plantify.ui.viewmodel.HomeViewModel
-import com.example.plantify.ui.viewmodel.LocationViewModel
 import com.example.plantify.ui.viewmodel.ViewModelFactory
 
 sealed class Screen(val route: String, val title: String, val iconRes: Int = 0) {
@@ -54,22 +52,14 @@ sealed class Screen(val route: String, val title: String, val iconRes: Int = 0) 
 fun PlantifyApp() {
     val context = LocalContext.current
     val database = remember { PlantDatabase.getDatabase(context) }
-    val repository = remember { PlantRepository(database.plantDao()) }
+    val repository = remember { PlantRepository(database.plantDao(), com.example.plantify.data.remote.AiService()) }
     val viewModelFactory = remember { ViewModelFactory(repository) }
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // Shared ViewModels
     val homeViewModel: HomeViewModel = viewModel(factory = viewModelFactory)
-    val locationViewModel: LocationViewModel = viewModel(factory = viewModelFactory)
-
-    // Feed live weather from LocationViewModel into HomeViewModel
-    val weatherCondition by locationViewModel.weatherCondition.collectAsState()
-    LaunchedEffect(weatherCondition) {
-        weatherCondition?.let { homeViewModel.updateWeather(it) }
-    }
 
     val bottomNavItems = listOf(
         Screen.Home,
@@ -108,4 +98,122 @@ fun PlantifyApp() {
                             selected = isSelected,
                             onClick = {
                                 navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.find
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = PlantifyMediumGreen,
+                                selectedTextColor = PlantifyMediumGreen,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                indicatorColor = Color.Transparent
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Splash.route,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(Screen.Splash.route) {
+                SplashScreen(onTimeout = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                })
+            }
+            composable(Screen.Home.route) {
+                HomeScreen(
+                    viewModel = homeViewModel,
+                    onPlantClick = {
+                        navController.navigate(Screen.GrowthProgress.route)
+                    },
+                    onNotificationClick = {
+                        navController.navigate(Screen.Alerts.route)
+                    }
+                )
+            }
+            composable(Screen.Catalog.route) {
+                CatalogScreen(
+                    viewModel = viewModel(factory = viewModelFactory),
+                    onAddNewTypeClick = {
+                        navController.navigate(Screen.AddPlantType.route)
+                    },
+                    onAddPlantClick = { id ->
+                        navController.navigate(Screen.AddPlant.createRoute(id))
+                    },
+                    onPlantClick = { plantId -> navController.navigate(Screen.PlantDetail.createRoute(plantId)) }
+                )
+            }
+            composable(Screen.Schedule.route) {
+                ScheduleScreen(
+                    viewModel = viewModel(factory = viewModelFactory)
+                )
+            }
+            composable(Screen.Growth.route) {
+                GrowthProgressScreen(
+                    viewModel = viewModel(factory = viewModelFactory)
+                )
+            }
+            composable(Screen.Profile.route) {
+                ProfileScreen(
+                    viewModel = viewModel(factory = viewModelFactory),
+                    onNotificationClick = {
+                        navController.navigate(Screen.Alerts.route)
+                    }
+                )
+            }
+            composable(
+                route = Screen.AddPlant.route,
+                arguments = listOf(navArgument("plantId") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                })
+            ) { backStackEntry ->
+                val plantId = backStackEntry.arguments?.getInt("plantId") ?: 0
+                AddPlantScreen(
+                    viewModel = viewModel(factory = viewModelFactory),
+                    preSelectedPlantId = plantId,
+                    onSuccess = { navController.navigateUp() }
+                )
+            }
+            composable(Screen.AddPlantType.route) {
+                AddPlantTypeScreen(
+                    viewModel = viewModel(factory = viewModelFactory),
+                    onBackClick = { navController.navigateUp() },
+                    onSuccess = { navController.navigateUp() }
+                )
+            }
+            composable(
+                route = Screen.PlantDetail.route,
+                arguments = listOf(navArgument("plantId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val plantId = backStackEntry.arguments?.getString("plantId") ?: ""
+                PlantDetailScreen(
+                    plantId = plantId,
+                    onBackClick = { navController.popBackStack() },
+                    onGrowthProgressClick = { navController.navigate(Screen.GrowthProgress.route) }
+                )
+            }
+            composable(Screen.GrowthProgress.route) {
+                GrowthProgressScreen(
+                    viewModel = viewModel(factory = viewModelFactory)
+                )
+            }
+            composable(Screen.Alerts.route) {
+                AlertsScreen(
+                    viewModel = viewModel(factory = viewModelFactory),
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+        }
+    }
+}
