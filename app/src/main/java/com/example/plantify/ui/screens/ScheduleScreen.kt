@@ -20,14 +20,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.plantify.data.ScheduleGroup
-import com.example.plantify.data.ScheduleItem
-import com.example.plantify.ui.theme.PlantifyMediumGreen
+import com.example.plantify.R
+import com.example.plantify.data.local.entity.TaskScheduleEntity
+import com.example.plantify.ui.theme.*
 import com.example.plantify.ui.viewmodel.ScheduleViewModel
 
 @Composable
 fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel()) {
-    val scheduleGroups by viewModel.scheduleGroups.collectAsState()
+    val schedules by viewModel.allSchedules.collectAsState()
 
     Column(
         modifier = Modifier
@@ -50,12 +50,12 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel()) {
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 16.dp, top = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 100.dp, top = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(scheduleGroups) { group ->
-                ScheduleSection(group, onToggle = { item ->
-                    viewModel.toggleDone(item)
+            items(schedules) { task ->
+                ScheduleCard(task, onToggle = {
+                    viewModel.toggleDone(task)
                 })
             }
         }
@@ -63,24 +63,24 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel()) {
 }
 
 @Composable
-fun ScheduleSection(group: ScheduleGroup, onToggle: (ScheduleItem) -> Unit) {
-    Column {
-        Text(
-            text = group.date,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-        group.items.forEach { item ->
-            ScheduleCard(item, onToggle = { onToggle(item) })
-            Spacer(modifier = Modifier.height(12.dp))
-        }
+fun ScheduleCard(item: TaskScheduleEntity, onToggle: () -> Unit) {
+    val isDone = item.status_tugas == "Done"
+    val iconRes = when (item.jenis_tugas) {
+        "Watering" -> R.drawable.ic_water_drop
+        "Fertilizing" -> R.drawable.ic_bolt
+        else -> R.drawable.ic_book
     }
-}
+    val iconTint = when (item.jenis_tugas) {
+        "Watering" -> PlantifyWaterTeal
+        "Fertilizing" -> PlantifyFertilizerAmber
+        else -> PlantifyIconGreen
+    }
+    val iconBg = when (item.jenis_tugas) {
+        "Watering" -> PlantifyWaterTealBg
+        "Fertilizing" -> PlantifyFertilizerAmberBg
+        else -> Color(0xFFE8F5E9)
+    }
 
-@Composable
-fun ScheduleCard(item: ScheduleItem, onToggle: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -98,17 +98,12 @@ fun ScheduleCard(item: ScheduleItem, onToggle: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(24.dp)
-                    .then(
-                        if (item.isDone) {
-                            Modifier.background(PlantifyMediumGreen, CircleShape)
-                        } else {
-                            Modifier.border(2.dp, MaterialTheme.colorScheme.outline, CircleShape)
-                        }
-                    )
+                    .background(if (isDone) PlantifyMediumGreen else Color.Transparent, CircleShape)
+                    .border(if (isDone) 0.dp else 2.dp, if (isDone) Color.Transparent else Color.LightGray, CircleShape)
                     .clickable { onToggle() },
                 contentAlignment = Alignment.Center
             ) {
-                if (item.isDone) {
+                if (isDone) {
                     Icon(
                         Icons.Default.Check,
                         contentDescription = null,
@@ -123,13 +118,13 @@ fun ScheduleCard(item: ScheduleItem, onToggle: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .background(item.iconBgColor, RoundedCornerShape(8.dp)),
+                    .background(iconBg, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(id = item.iconRes),
+                    painter = painterResource(id = iconRes),
                     contentDescription = null,
-                    tint = item.iconTint,
+                    tint = iconTint,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -138,20 +133,20 @@ fun ScheduleCard(item: ScheduleItem, onToggle: () -> Unit) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = item.title,
+                    text = item.jenis_tugas,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = item.plantName,
+                    text = "Plant ID: ${item.id_kebun}",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
 
             Text(
-                text = item.time,
+                text = item.waktu_eksekusi,
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )

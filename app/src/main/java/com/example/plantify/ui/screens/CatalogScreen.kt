@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.plantify.data.PlantCategory
+import com.example.plantify.data.local.entity.PlantCatalogEntity
 import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.theme.PlantifyTextGray
 import com.example.plantify.ui.viewmodel.CatalogViewModel
@@ -32,23 +32,24 @@ import com.example.plantify.ui.viewmodel.CatalogViewModel
 @Composable
 fun CatalogScreen(
     viewModel: CatalogViewModel = viewModel(),
-    onAddPlantClick: () -> Unit = {},
+    onAddNewTypeClick: () -> Unit = {}, // For the FAB
+    onAddPlantClick: (Int) -> Unit = {}, // For the card plus button (passes ID)
     onPlantClick: (String) -> Unit = {}
 ) {
-    val plants by viewModel.plants.collectAsState()
+    val catalog by viewModel.catalog.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
 
     Scaffold(
         containerColor = Color(0xFFF8F9FA),
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onAddPlantClick,
+                onClick = onAddNewTypeClick,
                 containerColor = PlantifyMediumGreen,
                 contentColor = Color.White,
                 shape = CircleShape,
                 elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Plant")
+                Icon(Icons.Default.Add, contentDescription = "Add New Plant Type")
             }
         }
     ) { innerPadding ->
@@ -118,12 +119,9 @@ fun CatalogScreen(
                     contentPadding = PaddingValues(bottom = 80.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(plants) { plant ->
-                        CatalogPlantItem(
-                            plant = plant,
-                            onAddClick = onAddPlantClick,
-                            onItemClick = { onPlantClick(plant.name) }
-                        )
+                    items(catalog) { plant ->
+                        PlantItem(plant, onAddClick = { onAddPlantClick(plant.id_tanaman) })
+                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
                     }
                 }
             }
@@ -132,8 +130,8 @@ fun CatalogScreen(
 }
 
 @Composable
-fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> Unit) {
-    Surface(
+fun PlantItem(plant: PlantCatalogEntity, onAddClick: () -> Unit) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onItemClick() },
@@ -147,56 +145,40 @@ fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: 
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Image Container
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFFF1F8E9)),
-                contentAlignment = Alignment.Center
-            ) {
-                if (plant.imageRes != 0) {
-                    Image(
-                        painter = painterResource(id = plant.imageRes),
-                        contentDescription = plant.name,
-                        modifier = Modifier.size(40.dp)
-                    )
-                } else {
-                    Text(text = "🌱", fontSize = 28.sp)
-                }
-            }
+            Text(text = plant.emoji_icon ?: "🌱", fontSize = 24.sp)
+        }
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = plant.name,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color(0xFF1A212E)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        color = plant.difficultyColor.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(6.dp)
-                    ) {
-                        Text(
-                            text = plant.difficulty,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontSize = 11.sp,
-                            color = plant.difficultyColor,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = plant.nama_tanaman,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val difficultyColor = when (plant.difficulty) {
+                    "Easy" -> Color(0xFFE8F5E9)
+                    "Medium" -> Color(0xFFFFF3E0)
+                    else -> Color(0xFFF5F5F5)
+                }
+                Surface(
+                    color = difficultyColor,
+                    shape = RoundedCornerShape(4.dp)
+                ) {
                     Text(
-                        text = "${plant.duration} • ${plant.watering}",
-                        fontSize = 12.sp,
-                        color = PlantifyTextGray,
+                        text = plant.difficulty ?: "Easy",
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        fontSize = 11.sp,
+                        color = if (plant.difficulty == "Medium") Color(0xFFE65100) else Color(0xFF2E7D32),
                         fontWeight = FontWeight.Medium
                     )
                 }
+                Text(
+                    text = " • ${plant.durasi_panen} days • Siram ${plant.interval_siram} hari",
+                    fontSize = 12.sp,
+                    color = PlantifyTextGray
+                )
             }
 
             IconButton(
