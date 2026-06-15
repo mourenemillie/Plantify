@@ -18,6 +18,11 @@
     <string name="promo_description">Support urban food independence by growing your own vegetables at home</string>
     <string name="promo_learn_more">Learn more</string>
 
+    <!-- Catalog Screen -->
+    <string name="discover">Discover</string>
+    <string name="plant_catalog">Plant Catalog</string>
+    <string name="search_plants">Search plants...</string>
+
     <!-- Splash Screen -->
     <string name="welcome_title">Welcome to Plantify</string>
     <string name="welcome_description">Your personal urban farming assistant.\nTrack your plants, get smart reminders,\nand grow your own food at home.</string>
@@ -46,4 +51,11 @@
     <string name="next_watering">Next watering</string>
     <string name="today">Today</string>
     <string name="tomorrow">Tomorrow</string>
+
+    <!-- Misc UI -->
+    <string name="care_schedule">Care Schedule</string>
+    <string name="choose_language">Choose Language</string>
+    <string name="english">English</string>
+    <string name="indonesian">Indonesian</string>
+    <string name="cancel">Cancel</string>
 </resources>

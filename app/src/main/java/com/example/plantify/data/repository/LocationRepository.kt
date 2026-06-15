@@ -3,6 +3,7 @@ package com.example.plantify.data.repository
 import com.example.plantify.data.remote.BmkgApiService
 import com.example.plantify.data.remote.LocationApiService
 import com.example.plantify.data.remote.NominatimApiService
+import com.example.plantify.data.remote.model.NominatimSearchResponse // Tambahan import baru
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -18,6 +19,28 @@ class LocationRepository(
 
     suspend fun reverseGeocode(lat: Double, lon: Double) = withContext(Dispatchers.IO) {
         nominatimService.reverseGeocode(lat = lat, lon = lon).address
+    }
+
+    suspend fun getCoordinatesFromAddress(
+        kelurahan: String,
+        kecamatan: String,
+        kabupaten: String,
+        provinsi: String
+    ): NominatimSearchResponse? = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val fullAddress = "$kelurahan, $kecamatan, $kabupaten, $provinsi, Indonesia"
+
+            val results = nominatimService.searchGeocode(address = fullAddress)
+
+            if (results.isNotEmpty()) {
+                results[0]
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     suspend fun getBmkgWeather(adm4: String) = withContext(Dispatchers.IO) {

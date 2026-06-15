@@ -29,6 +29,10 @@ class ViewModelFactory(private val repository: PlantRepository) : ViewModelProvi
             modelClass.isAssignableFrom(AddPlantTypeViewModel::class.java) -> {
                 AddPlantTypeViewModel(repository) as T
             }
+            // Menambahkan AlertsViewModel dari branch Hasna untuk halaman notifikasi
+            modelClass.isAssignableFrom(AlertsViewModel::class.java) -> {
+                AlertsViewModel(repository) as T
+            }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }

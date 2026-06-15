@@ -15,16 +15,10 @@ class ScheduleViewModel(private val repository: PlantRepository) : ViewModel() {
     val allSchedules: StateFlow<List<TaskScheduleEntity>> = _allSchedules.asStateFlow()
 
     init {
-        combine(repository.allSchedules, repository.myPlants) { schedules, plants ->
-            val items = schedules.map { entity ->
-                val plantName = plants.find { it.id_kebun == entity.id_kebun }?.nama_pot ?: "Unknown Plant"
-                
-                val iconRes = when (entity.jenis_tugas) {
-                    "Watering" -> R.drawable.ic_water_drop
-                    "Fertilizing" -> R.drawable.ic_bolt
-                    else -> R.drawable.ic_book
-                }
+        loadSchedule()
+    }
 
+    // Mengambil data jadwal langsung dari database lokal
     private fun loadSchedule() {
         viewModelScope.launch {
             repository.allSchedules.collect {
@@ -36,6 +30,7 @@ class ScheduleViewModel(private val repository: PlantRepository) : ViewModel() {
         }
     }
 
+    // Mengubah status tugas selesai (Done) atau belum (Pending)
     fun toggleDone(item: TaskScheduleEntity) {
         viewModelScope.launch {
             val updatedItem = item.copy(status_tugas = if (item.status_tugas == "Done") "Pending" else "Done")

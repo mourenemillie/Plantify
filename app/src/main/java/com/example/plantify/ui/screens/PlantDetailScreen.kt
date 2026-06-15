@@ -11,85 +11,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.plantify.ui.theme.PlantifyMediumGreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.viewmodel.PlantDetailViewModel
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlantDetailScreen(
     plantId: String,
-    onBackClick: () -> Unit = {}
-) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Plant Detail", color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = PlantifyMediumGreen)
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color.White)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Surface(
-                modifier = Modifier.size(120.dp),
-                shape = RoundedCornerShape(24.dp),
-                color = Color(0xFFE8F5E9)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(text = "\uD83C\uDF31", fontSize = 48.sp)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Plant ID: $plantId",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A212E)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Detailed info for this plant will be shown here.",
-                fontSize = 14.sp,
-                color = Color.Gray
-            )
-
     onBackClick: () -> Unit = {},
     onGrowthProgressClick: () -> Unit = {},
     viewModel: PlantDetailViewModel = viewModel()
@@ -113,7 +49,7 @@ fun PlantDetailScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
     ) {
         // Header
@@ -191,12 +127,12 @@ fun PlantDetailScreen(
                                         CircleShape
                                     )
                             )
-                            Text(stage, fontSize = 9.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
+                            Text(stage, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(top = 4.dp))
                         }
                         if (index < p.stages.size - 1) {
                             HorizontalDivider(
                                 modifier = Modifier.weight(1f).padding(bottom = 14.dp),
-                                color = if (index < p.currentStageIndex) PlantifyMediumGreen else Color(0xFFE0E0E0),
+                                color = if (index < p.currentStageIndex) PlantifyMediumGreen else MaterialTheme.colorScheme.outlineVariant,
                                 thickness = 2.dp
                             )
                         }
@@ -209,7 +145,7 @@ fun PlantDetailScreen(
                     progress = { p.progress },
                     modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
                     color = PlantifyMediumGreen,
-                    trackColor = Color(0xFFE0E0E0)
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -218,7 +154,7 @@ fun PlantDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Day ${p.currentDay} of ${p.totalDays}", fontSize = 13.sp, color = Color.Gray)
+                    Text("Day ${p.currentDay} of ${p.totalDays}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                     Text("${(p.progress * 100).toInt()}% complete", fontSize = 13.sp, color = PlantifyMediumGreen, fontWeight = FontWeight.Medium)
                 }
 
@@ -238,7 +174,7 @@ fun PlantDetailScreen(
             DetailCard {
                 Text("About", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(p.description, fontSize = 14.sp, color = Color(0xFF555555), lineHeight = 22.sp)
+                Text(p.description, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f), lineHeight = 22.sp)
             }
 
             // Card: Info Perawatan
@@ -279,7 +215,7 @@ fun PlantDetailScreen(
                             modifier = Modifier.size(18.dp).padding(top = 2.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text(tip, fontSize = 14.sp, color = Color(0xFF555555), lineHeight = 20.sp)
+                        Text(tip, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f), lineHeight = 20.sp)
                     }
                 }
             }
@@ -294,7 +230,7 @@ private fun DetailCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp), content = content)
@@ -305,11 +241,11 @@ private fun DetailCard(content: @Composable ColumnScope.() -> Unit) {
 private fun CareChip(emoji: String, label: String, value: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
             .padding(12.dp)
     ) {
-        Text(text = "$emoji  $label", fontSize = 11.sp, color = Color.Gray)
+        Text(text = "$emoji  $label", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = value, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF333333))
+        Text(text = value, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
     }
 }

@@ -1,7 +1,7 @@
 package com.example.plantify
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.work.*
 import com.example.plantify.data.worker.SyncWorker
@@ -11,9 +11,8 @@ import java.util.concurrent.TimeUnit
 
 //perlu diingat! file utama hanya untuk navigasi!
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         
         setupSyncWorker()

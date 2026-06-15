@@ -20,17 +20,18 @@ private val DarkColorScheme = darkColorScheme(
     primary = PlantifyLightGreen,
     secondary = PlantifyMediumGreen,
     tertiary = PlantifyDarkGreen,
-    background = Color(0xFF121212),
-    surface = Color(0xFF1E1E1E),
-    surfaceVariant = Color(0xFF2A2A2A),
+    background = Color(0xFF0D1B0D),        // Sangat gelap kehijauan
+    surface = Color(0xFF152415),           // Permukaan card gelap kehijauan
+    surfaceVariant = Color(0xFF1E3020),    // Input field background gelap
     onPrimary = Color.White,
     onSecondary = Color.White,
     onTertiary = Color.White,
-    onBackground = Color(0xFFE8E8E8),
-    onSurface = Color(0xFFE8E8E8),
-    onSurfaceVariant = Color(0xFFB0B0B0),
-    outline = Color(0xFF555555),
-    outlineVariant = Color(0xFF333333)
+    onBackground = Color(0xFFECF5EC),      // Teks utama di background — sangat terang
+    onSurface = Color(0xFFE8F0E8),         // Teks di dalam card — terang
+    onSurfaceVariant = Color(0xFFB8D0B8),  // Teks sekunder / placeholder
+    error = Color(0xFFFF6B6B),
+    outline = Color(0xFF3D5C3D),           // Border terlihat di dark
+    outlineVariant = Color(0xFF253825)     // Border tipis
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -59,7 +60,6 @@ fun PlantifyTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

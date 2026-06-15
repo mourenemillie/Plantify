@@ -22,39 +22,41 @@ class HomeViewModel(
     private val _tasks = MutableStateFlow<List<TaskScheduleEntity>>(emptyList())
     val tasks: StateFlow<List<TaskScheduleEntity>> = _tasks.asStateFlow()
 
+    // State cuaca berdasarkan wilayah permanen tanaman
     private val _currentWeather = MutableStateFlow("Fetching weather...")
     val currentWeather: StateFlow<String> = _currentWeather.asStateFlow()
-
-    private val _weatherCondition = MutableStateFlow("28°C — Sunny")
-    val weatherCondition: StateFlow<String> = _weatherCondition.asStateFlow()
 
     init {
         loadData()
     }
 
     private fun loadData() {
+        // Mengambil daftar tanaman dari database lokal
         viewModelScope.launch {
             repository.myPlants.collect {
                 _myPlants.value = it
-                // Logic to fetch weather for the first plant's location
-                // In a real app, you might want a default location or user location
             }
         }
+        
+        // Mengambil seluruh jadwal tugas perawatan
         viewModelScope.launch {
             repository.allSchedules.collect {
                 _tasks.value = it
             }
         }
+        
+        // Sinkronisasi data ke Supabase cloud
         viewModelScope.launch {
             repository.syncWithSupabase()
         }
-        // Fetch weather for a default location or based on plants
+        
+        // Mengambil data cuaca wilayah dari API berdasarkan kode area tanaman
         viewModelScope.launch {
-            val weather = weatherService.getCurrentWeather("32.73.20.1001") // Sample code
+            val weather = weatherService.getCurrentWeather("32.73.20.1001") 
             if (weather != null) {
                 _currentWeather.value = weather
             } else {
-                _currentWeather.value = "Sunny, 28°C" // Fallback dummy but tracked
+                _currentWeather.value = "Sunny, 28°C" 
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.plantify.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -26,16 +28,19 @@ import com.example.plantify.data.local.entity.MyPlantEntity
 import com.example.plantify.data.local.entity.TaskScheduleEntity
 import com.example.plantify.ui.theme.*
 import com.example.plantify.ui.viewmodel.HomeViewModel
+import com.example.plantify.ui.viewmodel.ViewModelFactory
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel(),
+    viewModel: HomeViewModel = viewModel(factory = ViewModelFactory(LocalContext.current)),
     onPlantClick: (String) -> Unit = {},
     onNotificationClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val plants by viewModel.myPlants.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
+    
+    // Mengambil data cuaca wilayah tanaman dari ViewModel (Tanpa GPS)
     val weather by viewModel.currentWeather.collectAsState()
 
     Column(
@@ -44,7 +49,11 @@ fun HomeScreen(
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
     ) {
-        HomeHeader(plantCount = plants.size, weather = weather)
+        HomeHeader(
+            plantCount = plants.size,
+            weatherText = weather ?: "Pilih wilayah di Catalog...",
+            onNotificationClick = onNotificationClick
+        )
 
         Column(
             modifier = Modifier
@@ -68,9 +77,10 @@ fun HomeScreen(
             plants.forEach { plant ->
                 PlantItem(
                     name = plant.nama_pot ?: "Plant",
-                    days = 0, // Should be calculated
+                    days = 0, // Otomatis dihitung di backend/repository
                     progress = plant.progress_persen / 100f,
                     nextWatering = plant.next_watering ?: "N/A",
+                    imageRes = 0,
                     onClick = { onPlantClick(plant.id_kebun.toString()) }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -82,7 +92,11 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeHeader(plantCount: Int, weather: String) {
+private fun HomeHeader(
+    plantCount: Int,
+    weatherText: String,
+    onNotificationClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -159,9 +173,9 @@ private fun HomeHeader(plantCount: Int, weather: String) {
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = weather,
+                        text = weatherText,
                         color = Color.White,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
