@@ -28,18 +28,18 @@ import com.example.plantify.data.local.entity.MyPlantEntity
 import com.example.plantify.data.local.entity.TaskScheduleEntity
 import com.example.plantify.ui.theme.*
 import com.example.plantify.ui.viewmodel.HomeViewModel
-import com.example.plantify.ui.viewmodel.ViewModelFactory
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel(factory = ViewModelFactory(LocalContext.current)),
+    // Parameter default diubah agar tidak menyebabkan error mismatch context
+    viewModel: HomeViewModel = viewModel(),
     onPlantClick: (String) -> Unit = {},
     onNotificationClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val plants by viewModel.myPlants.collectAsState()
     val tasks by viewModel.tasks.collectAsState()
-    
+
     // Mengambil data cuaca wilayah tanaman dari ViewModel (Tanpa GPS)
     val weather by viewModel.currentWeather.collectAsState()
 
@@ -77,7 +77,7 @@ fun HomeScreen(
             plants.forEach { plant ->
                 PlantItem(
                     name = plant.nama_pot ?: "Plant",
-                    days = 0, // Otomatis dihitung di backend/repository
+                    days = 0,
                     progress = plant.progress_persen / 100f,
                     nextWatering = plant.next_watering ?: "N/A",
                     imageRes = 0,

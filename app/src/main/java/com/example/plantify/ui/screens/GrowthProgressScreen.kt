@@ -21,17 +21,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.plantify.data.GrowthNote
 import com.example.plantify.data.GrowthProgressItem
 import com.example.plantify.ui.theme.PlantifyMediumGreen
+import com.example.plantify.ui.viewmodel.GrowthNote
 import com.example.plantify.ui.viewmodel.GrowthProgressViewModel
-import com.example.plantify.ui.viewmodel.ViewModelFactory
-import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GrowthProgressScreen(
-    viewModel: GrowthProgressViewModel = viewModel(factory = ViewModelFactory(LocalContext.current)),
+    // Parameter default disesuaikan agar tidak error context mismatch
+    viewModel: GrowthProgressViewModel = viewModel(),
     onBackClick: () -> Unit = {}
 ) {
     val growthItems by viewModel.growthItems.collectAsState()
@@ -135,14 +134,12 @@ fun GrowthCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            // Header: Emoji besar + nama tanaman + hari
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Fix 7: Tampilkan emoji tanaman sebagai "icon" utama, bukan ikon daun
                     Surface(
                         modifier = Modifier.size(48.dp),
                         shape = RoundedCornerShape(12.dp),
@@ -175,7 +172,7 @@ fun GrowthCard(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Timeline stage
+            // // Timeline tahapan pertumbuhan tanaman
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -210,7 +207,6 @@ fun GrowthCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Progress bar
             LinearProgressIndicator(
                 progress = { item.progress },
                 modifier = Modifier

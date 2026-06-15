@@ -7,7 +7,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Star
@@ -24,19 +23,13 @@ import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.theme.PlantifyLightGreen
 import com.example.plantify.ui.theme.PlantifyDarkGreen
 import com.example.plantify.ui.viewmodel.AddPlantViewModel
-import com.example.plantify.ui.viewmodel.AiRecommendationState
-import com.example.plantify.ui.viewmodel.PlantOption
-import com.example.plantify.ui.viewmodel.ViewModelFactory
-import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 
 @Composable
 fun AddPlantScreen(
     viewModel: AddPlantViewModel = viewModel(),
     preSelectedPlantId: Int = 0,
-    onBackClick: () -> Unit = {},
-    onSuccess: () -> Unit = {},
-    onCustomizeManually: () -> Unit = {}
+    onSuccess: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     var showSuccessDialog by remember { mutableStateOf(false) }
@@ -66,25 +59,26 @@ fun AddPlantScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Header bar
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(PlantifyMediumGreen)
-                .padding(top = 16.dp, bottom = 24.dp, start = 8.dp, end = 16.dp)
+                .padding(top = 16.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
         ) {
-            Text(
-                text = "Step 1 of 2",
-                color = Color.White.copy(alpha = 0.9f),
-                fontSize = 14.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Add New Plant",
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Column {
+                Text(
+                    text = "Step 1 of 2",
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Add New Plant",
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
         Column(
@@ -94,7 +88,7 @@ fun AddPlantScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ── Pilih Tanaman ──
+            // // Pilih Tanaman
             FormCard {
                 Text("Select Plant", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(8.dp))
@@ -103,17 +97,18 @@ fun AddPlantScreen(
                 }
             }
 
-            // ── Tanggal Tanam ──
+            // // Tanggal Tanam
             FormCard {
                 InputField(
                     label = "Planting date",
                     value = plantingDate,
-                    onValueChange = { /* Update date via viewModel */ },
-                    placeholder = "DD/MM/YYYY"
+                    onValueChange = { },
+                    placeholder = "DD/MM/YYYY",
+                    readOnly = true
                 )
             }
 
-            // ── Lokasi ──
+            // // Lokasi Wilayah Permanen Pot
             FormCard {
                 InputField(
                     label = "Location / pot name",
@@ -121,11 +116,11 @@ fun AddPlantScreen(
                     onValueChange = { viewModel.updateLocationName(it) },
                     placeholder = "e.g. Balcony pot #1"
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(text = "Location for Weather", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 LocationDropdown("Province", provinces.map { it.name }, selectedProvince?.name) { name ->
                     provinces.find { it.name == name }?.let { viewModel.selectProvince(it) }
                 }
@@ -140,7 +135,7 @@ fun AddPlantScreen(
                 }
             }
 
-            // ── AI Smart Advisor Card ──
+            // // AI Smart Advisor Card
             Card(
                 colors = CardDefaults.cardColors(containerColor = PlantifyLightGreen.copy(alpha = 0.15f)),
                 shape = RoundedCornerShape(12.dp),
@@ -170,7 +165,7 @@ fun AddPlantScreen(
                             fontSize = 14.sp
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        
+
                         if (isLoadingAi) {
                             Text("AI sedang membuat jadwal perawatan...", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
                         } else if (aiRecommendation.isNotEmpty()) {
@@ -189,7 +184,7 @@ fun AddPlantScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // ── Tombol Simpan ──
+            // // Tombol Simpan Aplikasi
             Button(
                 onClick = { viewModel.savePlantWithAiSchedule { showSuccessDialog = true } },
                 modifier = Modifier
@@ -199,29 +194,34 @@ fun AddPlantScreen(
                 shape = RoundedCornerShape(12.dp),
                 enabled = !isLoadingAi && selectedPlant != null && selectedVillage != null
             ) {
-                Text(text = "✅ Use AI Schedule & Save", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(text = "Use AI Schedule & Save", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             OutlinedButton(
-                onClick = { scope.launch { showSuccessDialog = true } },
+                onClick = {
+                    viewModel.savePlantManually(locationName.ifBlank { selectedPlant?.nama_tanaman ?: "Tanaman" }) {
+                        showSuccessDialog = true
+                    }
+                },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = PlantifyMediumGreen),
                 shape = RoundedCornerShape(12.dp),
-                border = androidx.compose.foundation.BorderStroke(1.5.dp, PlantifyMediumGreen)
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, PlantifyMediumGreen),
+                enabled = selectedPlant != null
             ) {
-                Text(text = "💾 Save Plant Manually", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Save Plant Manually", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
-    
+
     if (showSuccessDialog) {
         SuccessDialog(
-            plantName = selectedPlant?.nama_tanaman ?: "Tanaman", 
-            onDismiss = { 
+            plantName = selectedPlant?.nama_tanaman ?: "Tanaman",
+            onDismiss = {
                 showSuccessDialog = false
-                onSuccess() 
+                onSuccess()
             }
         )
     }
@@ -253,7 +253,7 @@ fun LocationDropdown(label: String, options: List<String>, selected: String?, on
                 colors = ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Text(
-                    text = selected ?: "Select $label", 
+                    text = selected ?: "Select $label",
                     color = if (selected == null) Color.Gray else MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f)
                 )

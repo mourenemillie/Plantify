@@ -26,6 +26,7 @@ import com.example.plantify.R
 import com.example.plantify.ui.theme.*
 import com.example.plantify.ui.viewmodel.ProfileViewModel
 import androidx.appcompat.app.AppCompatDelegate
+import com.example.plantify.ui.theme.ThemeManager
 import androidx.core.os.LocaleListCompat
 import androidx.compose.ui.platform.LocalContext
 import android.app.Activity
@@ -53,7 +54,7 @@ fun ProfileScreen(
     val plantsCount by viewModel.plantsCount.collectAsState()
     val daysActive by viewModel.daysActive.collectAsState()
     val tasksDone by viewModel.tasksDone.collectAsState()
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
+    val isDarkMode by ThemeManager.isDarkMode.collectAsState()
 
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
@@ -79,7 +80,7 @@ fun ProfileScreen(
             SectionTitle(title = stringResource(R.string.section_settings))
             SettingsSection(
                 isDarkMode = isDarkMode, 
-                onDarkModeChange = { viewModel.toggleDarkMode(it) },
+                onDarkModeChange = { ThemeManager.setDarkMode(context, it) },
                 onLanguageClick = { showLanguageDialog = true },
                 onNotificationClick = onNotificationClick
             )
@@ -108,9 +109,8 @@ fun ProfileScreen(
                 Column {
                     TextButton(
                         onClick = {
-                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
+                            ThemeManager.setLanguage(context, "en")
                             showLanguageDialog = false
-                            context.findActivity()?.recreate()
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -118,9 +118,8 @@ fun ProfileScreen(
                     }
                     TextButton(
                         onClick = {
-                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("id"))
+                            ThemeManager.setLanguage(context, "id")
                             showLanguageDialog = false
-                            context.findActivity()?.recreate()
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {

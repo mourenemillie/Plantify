@@ -12,9 +12,6 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(private val repository: PlantRepository) : ViewModel() {
 
-    private val _isDarkMode = MutableStateFlow(false)
-    val isDarkMode: StateFlow<Boolean> = _isDarkMode.asStateFlow()
-
     private val _userName = MutableStateFlow("Registered User")
     val userName: StateFlow<String> = _userName.asStateFlow()
 
@@ -57,9 +54,5 @@ class ProfileViewModel(private val repository: PlantRepository) : ViewModel() {
             }
             repository.syncWithSupabase()
         }
-    }
-
-    fun toggleDarkMode(enabled: Boolean) {
-        _isDarkMode.value = enabled
     }
 }

@@ -11,7 +11,6 @@ import com.example.plantify.data.remote.model.JadwalTugasDto
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-
 import com.example.plantify.data.remote.AiService
 
 class PlantRepository(
@@ -35,8 +34,14 @@ class PlantRepository(
         schedules.forEach {
             plantDao.insertSchedule(it.copy(id_kebun = id))
         }
-        // Sync after adding
+        // Sinkronisasi setelah data masuk
         syncWithSupabase()
+    }
+
+    suspend fun addPlant(plant: MyPlantEntity): Long {
+        val id = plantDao.insertMyPlant(plant)
+        syncWithSupabase()
+        return id
     }
 
     suspend fun updateSchedule(schedule: TaskScheduleEntity) {
@@ -46,8 +51,8 @@ class PlantRepository(
 
     suspend fun syncWithSupabase() {
         val supabase = SupabaseConfig.supabase
-        
-        // 1. Sync Catalog (Pull from Supabase)
+
+        // 1. Ambil data katalog dari Supabase
         try {
             val response = supabase.postgrest.from("tanaman_katalog").select()
             val remoteCatalog = response.decodeAs<List<TanamanKatalogDto>>()
@@ -67,9 +72,8 @@ class PlantRepository(
             e.printStackTrace()
         }
 
-        // 2. Sync My Plants (Bidirectional / Upsert)
+        // 2. Kirim data lokal ke Supabase
         try {
-            // Push local to remote
             val localPlants = plantDao.getMyPlants().first()
             val plantDtos = localPlants.map {
                 KebunkuDto(
@@ -86,7 +90,7 @@ class PlantRepository(
                 supabase.postgrest.from("kebunku").upsert(plantDtos)
             }
 
-            // Sync Schedules
+            // Sinkronisasi jadwal tugas
             val localSchedules = plantDao.getAllSchedules().first()
             val scheduleDtos = localSchedules.map {
                 JadwalTugasDto(
@@ -105,15 +109,10 @@ class PlantRepository(
         }
     }
 
-    suspend fun updateSchedule(schedule: TaskScheduleEntity) {
-        plantDao.updateSchedule(schedule)
-    }
-
     suspend fun generateScheduleWithAI(plantName: String, condition: String, idKebun: Int): List<TaskScheduleEntity> {
         return try {
             val jsonResponse = aiService.generateCareSchedule(plantName, condition)
             if (jsonResponse != null) {
-                // Parse response JSON into List<TaskScheduleEntity>
                 val jsonObj = org.json.JSONObject(jsonResponse)
                 val tasksArray = jsonObj.getJSONArray("tasks")
                 val schedules = mutableListOf<TaskScheduleEntity>()
@@ -122,7 +121,7 @@ class PlantRepository(
                     val task = tasksArray.getJSONObject(i)
                     val type = task.getString("type")
                     val time = task.getString("time")
-                    
+
                     schedules.add(
                         TaskScheduleEntity(
                             id_kebun = idKebun,
@@ -132,7 +131,6 @@ class PlantRepository(
                         )
                     )
                 }
-                
                 schedules
             } else {
                 emptyList()

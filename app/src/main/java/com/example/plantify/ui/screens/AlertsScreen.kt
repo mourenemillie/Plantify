@@ -29,7 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun AlertsScreen(
-    viewModel: AlertsViewModel = viewModel(factory = ViewModelFactory(LocalContext.current)),
+    viewModel: AlertsViewModel = viewModel(),
     onBackClick: () -> Unit = {}
 ) {
     val alerts by viewModel.alerts.collectAsState()

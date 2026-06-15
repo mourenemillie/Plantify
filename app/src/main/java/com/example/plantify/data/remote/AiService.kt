@@ -8,10 +8,11 @@ import kotlinx.coroutines.withContext
 
 class AiService {
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
+        modelName = "gemini-2.5-flash",
         apiKey = BuildConfig.GEMINI_API_KEY
     )
 
+    // Return String? (Null on unknown error, but here we will return "ERROR: msg" if it fails)
     suspend fun generateCareSchedule(plantName: String, condition: String, weatherContext: String? = null): String? = withContext(Dispatchers.IO) {
         val weatherInfo = if (weatherContext != null) "The current weather in the user's location is: $weatherContext." else ""
         val prompt = """
@@ -48,7 +49,7 @@ class AiService {
             return@withContext cleanText
         } catch (e: Exception) {
             Log.e("AiService", "Error generating care schedule", e)
-            null
+            return@withContext "ERROR: ${e.javaClass.simpleName} - ${e.message}"
         }
     }
 }

@@ -20,18 +20,18 @@ private val DarkColorScheme = darkColorScheme(
     primary = PlantifyLightGreen,
     secondary = PlantifyMediumGreen,
     tertiary = PlantifyDarkGreen,
-    background = Color(0xFF0D1B0D),        // Sangat gelap kehijauan
-    surface = Color(0xFF152415),           // Permukaan card gelap kehijauan
-    surfaceVariant = Color(0xFF1E3020),    // Input field background gelap
+    background = Color(0xFF121212),        // Pure dark background
+    surface = Color(0xFF1E1E1E),           // Card surface dark
+    surfaceVariant = Color(0xFF2C2C2C),    // Input field background dark
     onPrimary = Color.White,
     onSecondary = Color.White,
     onTertiary = Color.White,
-    onBackground = Color(0xFFECF5EC),      // Teks utama di background — sangat terang
-    onSurface = Color(0xFFE8F0E8),         // Teks di dalam card — terang
-    onSurfaceVariant = Color(0xFFB8D0B8),  // Teks sekunder / placeholder
+    onBackground = Color(0xFFE0E0E0),      // Teks utama terang
+    onSurface = Color(0xFFE0E0E0),         // Teks di dalam card terang
+    onSurfaceVariant = Color(0xFFA0A0A0),  // Teks sekunder / placeholder
     error = Color(0xFFFF6B6B),
-    outline = Color(0xFF3D5C3D),           // Border terlihat di dark
-    outlineVariant = Color(0xFF253825)     // Border tipis
+    outline = Color(0xFF424242),           // Border terlihat di dark
+    outlineVariant = Color(0xFF2C2C2C)     // Border tipis
 )
 
 private val LightColorScheme = lightColorScheme(
