@@ -16,8 +16,39 @@ class GrowthProgressViewModel(private val repository: PlantRepository) : ViewMod
     private val _growthItems = MutableStateFlow<List<GrowthProgressItem>>(emptyList())
     val growthItems: StateFlow<List<GrowthProgressItem>> = _growthItems.asStateFlow()
 
+    private val _notes = MutableStateFlow<Map<String, List<GrowthNote>>>(emptyMap())
+    val notes: StateFlow<Map<String, List<GrowthNote>>> = _notes.asStateFlow()
+
     init {
-        loadData()
+        viewModelScope.launch {
+            PlantRepository.plants.collect { entries ->
+                val outputFormatter = SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH)
+
+                _growthItems.value = entries.map { entry ->
+                    val currentDay = PlantRepository.calcCurrentDay(entry)
+                    val progress = PlantRepository.calcProgress(entry)
+                    val currentStageIndex = PlantRepository.calcStageIndex(entry)
+
+                    val harvestCal = Calendar.getInstance().apply {
+                        set(Calendar.YEAR, entry.plantingYear)
+                        set(Calendar.MONTH, entry.plantingMonth - 1)
+                        set(Calendar.DAY_OF_MONTH, entry.plantingDay)
+                    }
+                    harvestCal.add(Calendar.DAY_OF_MONTH, entry.totalDays)
+
+                    GrowthProgressItem(
+                        plantEmoji = entry.emoji,
+                        plantName = entry.name,
+                        currentDay = currentDay,
+                        totalDays = entry.totalDays,
+                        stages = entry.stages,
+                        currentStageIndex = currentStageIndex,
+                        estimateDate = outputFormatter.format(harvestCal.time),
+                        progress = progress
+                    )
+                }
+            }
+        }
     }
 
     private fun loadData() {

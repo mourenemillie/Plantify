@@ -13,13 +13,17 @@ import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         
         setupSyncWorker()
 
         setContent {
-            PlantifyTheme {
-                PlantifyApp()
+            val profileViewModel: ProfileViewModel = viewModel()
+            val isDarkMode by profileViewModel.isDarkMode.collectAsState()
+
+            PlantifyTheme(darkTheme = isDarkMode) {
+                PlantifyApp(profileViewModel = profileViewModel)
             }
         }
     }

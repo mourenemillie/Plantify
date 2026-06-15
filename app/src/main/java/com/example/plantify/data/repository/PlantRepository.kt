@@ -12,7 +12,12 @@ import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
-class PlantRepository(private val plantDao: PlantDao) {
+import com.example.plantify.data.remote.AiService
+
+class PlantRepository(
+    private val plantDao: PlantDao,
+    private val aiService: AiService
+) {
 
     val allCatalog: Flow<List<PlantCatalogEntity>> = plantDao.getAllCatalog()
     val myPlants: Flow<List<MyPlantEntity>> = plantDao.getMyPlants()
@@ -98,5 +103,47 @@ class PlantRepository(private val plantDao: PlantDao) {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    suspend fun updateSchedule(schedule: TaskScheduleEntity) {
+        plantDao.updateSchedule(schedule)
+    }
+
+    suspend fun generateScheduleWithAI(plantName: String, condition: String, idKebun: Int): List<TaskScheduleEntity> {
+        return try {
+            val jsonResponse = aiService.generateCareSchedule(plantName, condition)
+            if (jsonResponse != null) {
+                // Parse response JSON into List<TaskScheduleEntity>
+                val jsonObj = org.json.JSONObject(jsonResponse)
+                val tasksArray = jsonObj.getJSONArray("tasks")
+                val schedules = mutableListOf<TaskScheduleEntity>()
+
+                for (i in 0 until tasksArray.length()) {
+                    val task = tasksArray.getJSONObject(i)
+                    val type = task.getString("type")
+                    val time = task.getString("time")
+                    
+                    schedules.add(
+                        TaskScheduleEntity(
+                            id_kebun = idKebun,
+                            jenis_tugas = type,
+                            waktu_eksekusi = time,
+                            status_tugas = "Pending"
+                        )
+                    )
+                }
+                
+                schedules
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    suspend fun saveSchedules(schedules: List<TaskScheduleEntity>) {
+        plantDao.insertSchedules(schedules)
     }
 }

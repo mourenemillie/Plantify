@@ -42,6 +42,9 @@ interface PlantDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSchedule(schedule: TaskScheduleEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSchedules(schedules: List<TaskScheduleEntity>)
+
     @Update
     suspend fun updateSchedule(schedule: TaskScheduleEntity)
 

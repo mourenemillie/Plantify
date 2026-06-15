@@ -6,7 +6,8 @@ data class Plant(
     val daysGrown: Int,
     val progress: Float,
     val nextWatering: String,
-    val imageUrl: String = ""
+    val imageUrl: String = "",
+    val imageRes: Int = 0
 )
 
 data class PlantTask(
@@ -46,7 +47,8 @@ data class ScheduleItem(
     val iconRes: Int,
     val iconBgColor: androidx.compose.ui.graphics.Color,
     val iconTint: androidx.compose.ui.graphics.Color,
-    val isDone: Boolean = false
+    val isDone: Boolean = false,
+    val entity: com.example.plantify.data.local.entity.TaskScheduleEntity? = null
 )
 
 data class ScheduleGroup(
@@ -63,4 +65,9 @@ data class GrowthProgressItem(
     val currentStageIndex: Int,
     val estimateDate: String,
     val progress: Float
+)
+
+data class GrowthNote(
+    val date: String,
+    val note: String
 )

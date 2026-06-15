@@ -1,6 +1,5 @@
 package com.example.plantify.ui
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.*
@@ -45,6 +44,7 @@ sealed class Screen(val route: String, val title: String, val iconRes: Int = 0) 
         fun createRoute(plantId: String) = "plant_detail/$plantId"
     }
     object GrowthProgress : Screen("growth_progress", "Growth Progress")
+    object Alerts : Screen("alerts", "Alerts")
 }
 
 @Composable
@@ -72,7 +72,7 @@ fun PlantifyApp() {
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar(
-                    containerColor = Color.White,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 8.dp
                 ) {
                     bottomNavItems.forEach { screen ->
@@ -105,9 +105,9 @@ fun PlantifyApp() {
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = PlantifyMediumGreen,
                                 selectedTextColor = PlantifyMediumGreen,
-                                unselectedIconColor = Color(0xFF9CA3AF),
-                                unselectedTextColor = Color(0xFF9CA3AF),
-                                indicatorColor = Color.White
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                indicatorColor = Color.Transparent
                             )
                         )
                     }
@@ -134,8 +134,10 @@ fun PlantifyApp() {
                 HomeScreen(
                     viewModel = viewModel(factory = viewModelFactory),
                     onPlantClick = {
-                        // Langsung diarahkan ke rute GrowthProgress
                         navController.navigate(Screen.GrowthProgress.route)
+                    },
+                    onNotificationClick = {
+                        navController.navigate(Screen.Alerts.route)
                     }
                 )
             }
@@ -201,6 +203,9 @@ fun PlantifyApp() {
                 GrowthProgressScreen(
                     viewModel = viewModel(factory = viewModelFactory)
                 )
+            }
+            composable(Screen.Alerts.route) {
+                AlertsScreen()
             }
         }
     }

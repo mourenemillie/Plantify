@@ -1,11 +1,15 @@
 package com.example.plantify.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,10 +20,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.theme.PlantifyLightGreen
 import com.example.plantify.ui.theme.PlantifyDarkGreen
 import com.example.plantify.ui.viewmodel.AddPlantViewModel
+import com.example.plantify.ui.viewmodel.AiRecommendationState
+import com.example.plantify.ui.viewmodel.PlantOption
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddPlantScreen(
@@ -54,11 +60,12 @@ fun AddPlantScreen(
             .background(Color.White)
             .verticalScroll(rememberScrollState())
     ) {
-        Column(
+
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(PlantifyMediumGreen)
-                .padding(24.dp)
+                .padding(top = 16.dp, bottom = 24.dp, start = 8.dp, end = 16.dp)
         ) {
             Text(
                 text = "Step 1 of 2",
@@ -76,8 +83,10 @@ fun AddPlantScreen(
 
         Column(
             modifier = Modifier
-                .padding(24.dp)
-                .fillMaxWidth()
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             val catalog by viewModel.catalog.collectAsState()
             
@@ -129,8 +138,8 @@ fun AddPlantScreen(
                 border = androidx.compose.foundation.BorderStroke(1.dp, PlantifyMediumGreen)
             ) {
                 Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.Top
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (isLoadingAi) {
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), color = PlantifyMediumGreen)
@@ -145,12 +154,62 @@ fun AddPlantScreen(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Smart Care Advisor",
+                            text = "Smart Care Advisor (AI)",
                             fontWeight = FontWeight.Bold,
                             color = PlantifyDarkGreen,
                             fontSize = 14.sp
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    when (aiState) {
+                        is AiRecommendationState.Idle -> {
+                            Text(
+                                text = "Fill in plant and date above, then tap the button below to get a personalized care schedule from AI.",
+                                fontSize = 13.sp,
+                                color = Color(0xFF0D674E),
+                                lineHeight = 18.sp
+                            )
+                        }
+                        is AiRecommendationState.Loading -> {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    color = PlantifyMediumGreen,
+                                    strokeWidth = 2.dp
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text("Generating recommendation...", fontSize = 13.sp, color = Color(0xFF0D674E))
+                            }
+                        }
+                        is AiRecommendationState.Success -> {
+                            Text(
+                                text = (aiState as AiRecommendationState.Success).recommendation,
+                                fontSize = 13.sp,
+                                color = Color(0xFF0D674E),
+                                lineHeight = 19.sp
+                            )
+                        }
+                        is AiRecommendationState.Error -> {
+                            Text(
+                                text = (aiState as AiRecommendationState.Error).message,
+                                fontSize = 13.sp,
+                                color = Color.Red
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedButton(
+                        onClick = { viewModel.getAiRecommendation() },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF0D674E)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF0D674E)),
+                        enabled = aiState !is AiRecommendationState.Loading
+                    ) {
                         Text(
                             text = aiRecommendation,
                             fontSize = 13.sp,
@@ -175,19 +234,17 @@ fun AddPlantScreen(
                 Text(text = "Use AI Schedule", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
             OutlinedButton(
-                onClick = onCustomizeManually,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                onClick = { scope.launch { viewModel.savePlant() } },
+                modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = PlantifyMediumGreen),
                 shape = RoundedCornerShape(12.dp),
                 border = androidx.compose.foundation.BorderStroke(1.5.dp, PlantifyMediumGreen)
             ) {
-                Text(text = "Customize manually instead", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text("Customize manually instead", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
+
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -224,9 +281,10 @@ fun LocationDropdown(label: String, options: List<String>, selected: String?, on
 fun InputField(
     label: String,
     value: String,
-    onValueChange: (String) -> Unit = {},
-    placeholder: String = "",
-    readOnly: Boolean = true
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    isError: Boolean = false
 ) {
     Column {
         Text(text = label, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
@@ -247,5 +305,39 @@ fun InputField(
             ),
             readOnly = readOnly
         )
-    }
+    )
+}
+
+@Composable
+private fun SuccessDialog(plantName: String, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = null,
+                tint = PlantifyMediumGreen,
+                modifier = Modifier.size(48.dp)
+            )
+        },
+        title = { Text("Plant Added!", fontWeight = FontWeight.Bold, fontSize = 20.sp) },
+        text = {
+            Text(
+                text = "$plantName has been added to your garden. Track its growth in the Growth Progress screen.",
+                fontSize = 14.sp,
+                color = Color.Gray,
+                lineHeight = 20.sp
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(containerColor = PlantifyMediumGreen),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("Go to Home")
+            }
+        },
+        shape = RoundedCornerShape(16.dp)
+    )
 }

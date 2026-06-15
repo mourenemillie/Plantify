@@ -32,9 +32,8 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-        // Header sama kayak screen lain
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -85,8 +84,8 @@ fun ScheduleCard(item: TaskScheduleEntity, onToggle: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, Color(0xFFF0F0F0), RoundedCornerShape(16.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -96,7 +95,6 @@ fun ScheduleCard(item: TaskScheduleEntity, onToggle: () -> Unit) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Clickable circle checkbox
             Box(
                 modifier = Modifier
                     .size(24.dp)
@@ -138,19 +136,19 @@ fun ScheduleCard(item: TaskScheduleEntity, onToggle: () -> Unit) {
                     text = item.jenis_tugas,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "Plant ID: ${item.id_kebun}",
                     fontSize = 13.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
 
             Text(
                 text = item.waktu_eksekusi,
                 fontSize = 12.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
         }
     }

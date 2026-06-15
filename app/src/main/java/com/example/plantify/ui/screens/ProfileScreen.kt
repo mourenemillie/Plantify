@@ -41,7 +41,7 @@ fun ProfileScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
     ) {
         ProfileHeader(userName, memberSince)
@@ -124,7 +124,7 @@ private fun StatsCard(plantsCount: Int, daysActive: Int, tasksDone: Int) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 8.dp
     ) {
         Row(
@@ -133,9 +133,9 @@ private fun StatsCard(plantsCount: Int, daysActive: Int, tasksDone: Int) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             StatItem(value = plantsCount.toString(), label = stringResource(R.string.stat_plants))
-            VerticalDivider(modifier = Modifier.height(40.dp), color = Color(0xFFF1F1F1))
+            VerticalDivider(modifier = Modifier.height(40.dp), color = MaterialTheme.colorScheme.outlineVariant)
             StatItem(value = daysActive.toString(), label = stringResource(R.string.stat_days_active))
-            VerticalDivider(modifier = Modifier.height(40.dp), color = Color(0xFFF1F1F1))
+            VerticalDivider(modifier = Modifier.height(40.dp), color = MaterialTheme.colorScheme.outlineVariant)
             StatItem(value = tasksDone.toString(), label = stringResource(R.string.stat_tasks_done))
         }
     }
@@ -148,12 +148,12 @@ private fun StatItem(value: String, label: String) {
             text = value,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = label,
             fontSize = 12.sp,
-            color = Color.Gray
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
     }
 }
@@ -165,7 +165,7 @@ private fun SectionTitle(title: String) {
         modifier = Modifier.padding(start = 4.dp, bottom = 12.dp),
         style = MaterialTheme.typography.labelLarge.copy(
             fontWeight = FontWeight.Bold,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
             letterSpacing = 1.sp
         )
     )
@@ -175,7 +175,7 @@ private fun SectionTitle(title: String) {
 private fun SettingsSection(isDarkMode: Boolean, onDarkModeChange: (Boolean) -> Unit) {
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = Color.White
+        color = MaterialTheme.colorScheme.surface
     ) {
         Column {
             ProfileMenuItem(
@@ -184,7 +184,7 @@ private fun SettingsSection(isDarkMode: Boolean, onDarkModeChange: (Boolean) -> 
                 iconBgColor = PlantifyIconBlueBg,
                 iconTint = PlantifyIconBlue
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F1F1))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
             ProfileMenuItem(
                 iconRes = R.drawable.ic_language,
                 title = stringResource(R.string.menu_language),
@@ -192,7 +192,7 @@ private fun SettingsSection(isDarkMode: Boolean, onDarkModeChange: (Boolean) -> 
                 iconBgColor = PlantifyIconOrangeBg,
                 iconTint = PlantifyIconOrange
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F1F1))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
             DarkModeToggle(isDarkMode, onDarkModeChange)
         }
     }
@@ -202,7 +202,7 @@ private fun SettingsSection(isDarkMode: Boolean, onDarkModeChange: (Boolean) -> 
 private fun AboutSection() {
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = Color.White
+        color = MaterialTheme.colorScheme.surface
     ) {
         Column {
             ProfileMenuItem(
@@ -211,7 +211,7 @@ private fun AboutSection() {
                 iconBgColor = PlantifyIconGreenBg,
                 iconTint = PlantifyIconGreen
             )
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = Color(0xFFF1F1F1))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
             ProfileMenuItem(
                 iconRes = R.drawable.ic_info,
                 title = stringResource(R.string.menu_about),
@@ -254,13 +254,13 @@ private fun ProfileMenuItem(
         Text(
             text = title,
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF333333),
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
         if (value.isNotEmpty()) {
             Text(
                 text = value,
-                color = Color.LightGray,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                 modifier = Modifier.padding(horizontal = 8.dp),
                 fontSize = 14.sp
             )
@@ -268,7 +268,7 @@ private fun ProfileMenuItem(
         Icon(
             painter = painterResource(id = R.drawable.ic_chevron_right),
             contentDescription = null,
-            tint = Color.LightGray,
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
             modifier = Modifier.size(20.dp)
         )
     }
@@ -299,7 +299,7 @@ private fun DarkModeToggle(isDark: Boolean, onCheckedChange: (Boolean) -> Unit) 
         Text(
             text = stringResource(R.string.menu_dark_mode),
             fontWeight = FontWeight.Medium,
-            color = Color(0xFF333333),
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
         Switch(
@@ -318,7 +318,7 @@ private fun PromoCard() {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color(0xFFE8F5E9).copy(alpha = 0.5f),
+        color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, Color(0xFFC8E6C9))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {

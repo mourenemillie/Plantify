@@ -25,6 +25,9 @@ class HomeViewModel(
     private val _currentWeather = MutableStateFlow("Fetching weather...")
     val currentWeather: StateFlow<String> = _currentWeather.asStateFlow()
 
+    private val _weatherCondition = MutableStateFlow("28°C — Sunny")
+    val weatherCondition: StateFlow<String> = _weatherCondition.asStateFlow()
+
     init {
         loadData()
     }

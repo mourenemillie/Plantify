@@ -3,10 +3,8 @@ package com.example.plantify.data.remote
 import com.example.plantify.BuildConfig
 import android.util.Log
 import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.content
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
 
 class AiService {
     private val generativeModel = GenerativeModel(
@@ -32,7 +30,8 @@ class AiService {
                 }
               ]
             }
-            Only return the JSON.
+            Valid types are: "Watering", "Fertilizing", "Pruning".
+            Only return the raw JSON string. No markdown tags.
         """.trimIndent()
 
         try {
