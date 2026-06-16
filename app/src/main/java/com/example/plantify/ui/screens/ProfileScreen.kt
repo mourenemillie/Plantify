@@ -55,7 +55,7 @@ fun ProfileScreen(
     val daysActive by viewModel.daysActive.collectAsState()
     val tasksDone by viewModel.tasksDone.collectAsState()
     val isDarkMode by ThemeManager.isDarkMode.collectAsState()
-
+    // STATE CONTROL: Menyimpan status visibilitas dialog (Pop-up)
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -114,7 +114,7 @@ fun ProfileScreen(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("🇬🇧  " + stringResource(R.string.english), fontSize = 16.sp)
+                        Text(stringResource(R.string.english), fontSize = 16.sp)
                     }
                     TextButton(
                         onClick = {
@@ -123,7 +123,7 @@ fun ProfileScreen(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("🇮🇩  " + stringResource(R.string.indonesian), fontSize = 16.sp)
+                        Text(stringResource(R.string.indonesian), fontSize = 16.sp)
                     }
                 }
             },

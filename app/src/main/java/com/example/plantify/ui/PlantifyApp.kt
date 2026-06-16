@@ -46,6 +46,9 @@ sealed class Screen(val route: String, val title: String, val iconRes: Int = 0) 
     }
     object GrowthProgress : Screen("growth_progress", "Growth Progress")
     object Alerts : Screen("alerts", "Alerts")
+    object Location : Screen("location/{plantName}/{idKebun}", "Location") {
+        fun createRoute(plantName: String, idKebun: Int) = "location/$plantName/$idKebun"
+    }
 }
 
 @Composable
@@ -212,6 +215,22 @@ fun PlantifyApp() {
                 AlertsScreen(
                     viewModel = viewModel(factory = viewModelFactory),
                     onBackClick = { navController.popBackStack() }
+                )
+            }
+            composable(
+                route = Screen.Location.route,
+                arguments = listOf(
+                    navArgument("plantName") { type = NavType.StringType },
+                    navArgument("idKebun") { type = NavType.IntType }
+                )
+            ) { backStackEntry ->
+                val plantName = backStackEntry.arguments?.getString("plantName") ?: ""
+                val idKebun = backStackEntry.arguments?.getInt("idKebun") ?: 0
+                LocationScreen(
+                    viewModel = viewModel(factory = viewModelFactory),
+                    plantName = plantName,
+                    idKebun = idKebun,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
         }

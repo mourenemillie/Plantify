@@ -13,26 +13,26 @@ class LocationViewModel(
     private val locationRepository: LocationRepository,
     private val plantRepository: PlantRepository
 ) : ViewModel() {
-
+    //STATE MANAGEMENT
     private val _weatherCondition = MutableStateFlow<String?>(null)
     val weatherCondition: StateFlow<String?> = _weatherCondition
 
     private val _locationText = MutableStateFlow<String>("Locating...")
     val locationText: StateFlow<String> = _locationText
-
+    // Mengontrol status loading saat aplikasi melakukan request API jaringan.
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _schedulePreview = MutableStateFlow<List<com.example.plantify.data.local.entity.TaskScheduleEntity>?>(null)
     val schedulePreview: StateFlow<List<com.example.plantify.data.local.entity.TaskScheduleEntity>?> = _schedulePreview
-
+    //fetch location
     fun fetchLocationAndWeather(lat: Double, lon: Double) {
         if (_isLoading.value) return
         viewModelScope.launch {
             _isLoading.value = true
             _locationText.value = "Menganalisis lokasi..."
             try {
-                // 1. Reverse Geocode with OSM Nominatim
+                // 1. Reverse Geocode with OSM Nominatim (gps)
                 val address = locationRepository.reverseGeocode(lat, lon)
                 if (address != null) {
                     val villageName = address.village ?: address.suburb ?: address.town ?: "Unknown"
@@ -96,12 +96,9 @@ class LocationViewModel(
 
     fun updateLocationManually(newLocation: String) {
         _locationText.value = newLocation
-        // If they manually edit the location, we bypass BMKG strictly to avoid being blocked.
-        // We set the weather condition to their manual string. Gemini AI is smart enough to infer 
-        // the general weather for that region (e.g. "Rajabasa, Lampung") if BMKG data is missing.
         _weatherCondition.value = "Location: $newLocation"
     }
-
+// pemanggilan ai biar jadwal sesuai cucaca di lokasi tsb
     fun generateScheduleForPlant(plantName: String, idKebun: Int) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -128,7 +125,7 @@ class LocationViewModel(
                 )
                 targetIdKebun = plantRepository.addPlant(newPlant).toInt()
             }
-            
+            // Mengirim data Nama Tanaman, Kondisi Cuaca BMKG, dan ID Kebun ke kelas repositori untuk diproses oleh Gemini AI.
             val schedules = plantRepository.generateScheduleWithAI(plantName, condition, targetIdKebun)
             _schedulePreview.value = schedules
             _isLoading.value = false

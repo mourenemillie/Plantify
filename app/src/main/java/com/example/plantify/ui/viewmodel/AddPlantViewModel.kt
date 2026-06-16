@@ -5,12 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.plantify.data.local.entity.MyPlantEntity
 import com.example.plantify.data.local.entity.PlantCatalogEntity
 import com.example.plantify.data.local.entity.TaskScheduleEntity
-import com.example.plantify.data.models.Province
-import com.example.plantify.data.models.Regency
-import com.example.plantify.data.models.District
-import com.example.plantify.data.models.Village
+import com.example.plantify.data.remote.model.Wilayah
 import com.example.plantify.data.remote.AiService
-import com.example.plantify.data.remote.LocationService
+import com.example.plantify.data.repository.LocationRepository
+import com.example.plantify.data.remote.LocationApiClient
+import com.example.plantify.data.remote.NominatimApiClient
+import com.example.plantify.data.remote.BmkgApiClient
 import com.example.plantify.data.remote.WeatherService
 import com.example.plantify.data.repository.PlantRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +26,11 @@ import java.util.Locale
 class AddPlantViewModel(
     private val repository: PlantRepository,
     private val aiService: AiService = AiService(),
-    private val locationService: LocationService = LocationService(),
+    private val locationRepository: LocationRepository = LocationRepository(
+        LocationApiClient.instance, 
+        NominatimApiClient.instance, 
+        BmkgApiClient.instance
+    ),
     private val weatherService: WeatherService = WeatherService()
 ) : ViewModel() {
 
@@ -44,29 +48,29 @@ class AddPlantViewModel(
     val catalog: StateFlow<List<PlantCatalogEntity>> = _catalog.asStateFlow()
 
     // Pilihan wilayah berjenjang
-    private val _provinces = MutableStateFlow<List<Province>>(emptyList())
-    val provinces: StateFlow<List<Province>> = _provinces.asStateFlow()
+    private val _provinces = MutableStateFlow<List<Wilayah>>(emptyList())
+    val provinces: StateFlow<List<Wilayah>> = _provinces.asStateFlow()
 
-    private val _selectedProvince = MutableStateFlow<Province?>(null)
-    val selectedProvince: StateFlow<Province?> = _selectedProvince.asStateFlow()
+    private val _selectedProvince = MutableStateFlow<Wilayah?>(null)
+    val selectedProvince: StateFlow<Wilayah?> = _selectedProvince.asStateFlow()
 
-    private val _regencies = MutableStateFlow<List<Regency>>(emptyList())
-    val regencies: StateFlow<List<Regency>> = _regencies.asStateFlow()
+    private val _regencies = MutableStateFlow<List<Wilayah>>(emptyList())
+    val regencies: StateFlow<List<Wilayah>> = _regencies.asStateFlow()
 
-    private val _selectedRegency = MutableStateFlow<Regency?>(null)
-    val selectedRegency: StateFlow<Regency?> = _selectedRegency.asStateFlow()
+    private val _selectedRegency = MutableStateFlow<Wilayah?>(null)
+    val selectedRegency: StateFlow<Wilayah?> = _selectedRegency.asStateFlow()
 
-    private val _districts = MutableStateFlow<List<District>>(emptyList())
-    val districts: StateFlow<List<District>> = _districts.asStateFlow()
+    private val _districts = MutableStateFlow<List<Wilayah>>(emptyList())
+    val districts: StateFlow<List<Wilayah>> = _districts.asStateFlow()
 
-    private val _selectedDistrict = MutableStateFlow<District?>(null)
-    val selectedDistrict: StateFlow<District?> = _selectedDistrict.asStateFlow()
+    private val _selectedDistrict = MutableStateFlow<Wilayah?>(null)
+    val selectedDistrict: StateFlow<Wilayah?> = _selectedDistrict.asStateFlow()
 
-    private val _villages = MutableStateFlow<List<Village>>(emptyList())
-    val villages: StateFlow<List<Village>> = _villages.asStateFlow()
+    private val _villages = MutableStateFlow<List<Wilayah>>(emptyList())
+    val villages: StateFlow<List<Wilayah>> = _villages.asStateFlow()
 
-    private val _selectedVillage = MutableStateFlow<Village?>(null)
-    val selectedVillage: StateFlow<Village?> = _selectedVillage.asStateFlow()
+    private val _selectedVillage = MutableStateFlow<Wilayah?>(null)
+    val selectedVillage: StateFlow<Wilayah?> = _selectedVillage.asStateFlow()
 
     // Status rekomendasi AI
     private val _aiRecommendation = MutableStateFlow("Select a plant and location to see recommendations.")
@@ -96,42 +100,42 @@ class AddPlantViewModel(
 
     private fun loadProvinces() {
         viewModelScope.launch {
-            _provinces.value = locationService.getProvinces()
+            _provinces.value = locationRepository.getProvinces()
         }
     }
 
     // // Fungsi Dropdown Wilayah
-    fun selectProvince(province: Province) {
+    fun selectProvince(province: Wilayah) {
         _selectedProvince.value = province
         _selectedRegency.value = null
         _selectedDistrict.value = null
         _selectedVillage.value = null
         _regencies.value = emptyList()
         viewModelScope.launch {
-            _regencies.value = locationService.getRegencies(province.code)
+            _regencies.value = locationRepository.getRegencies(province.code)
         }
     }
 
-    fun selectRegency(regency: Regency) {
+    fun selectRegency(regency: Wilayah) {
         _selectedRegency.value = regency
         _selectedDistrict.value = null
         _selectedVillage.value = null
         _districts.value = emptyList()
         viewModelScope.launch {
-            _districts.value = locationService.getDistricts(regency.code)
+            _districts.value = locationRepository.getDistricts(regency.code)
         }
     }
 
-    fun selectDistrict(district: District) {
+    fun selectDistrict(district: Wilayah) {
         _selectedDistrict.value = district
         _selectedVillage.value = null
         _villages.value = emptyList()
         viewModelScope.launch {
-            _villages.value = locationService.getVillages(district.code)
+            _villages.value = locationRepository.getVillages(district.code)
         }
     }
 
-    fun selectVillage(village: Village) {
+    fun selectVillage(village: Wilayah) {
         _selectedVillage.value = village
         generateAiRecommendation()
     }

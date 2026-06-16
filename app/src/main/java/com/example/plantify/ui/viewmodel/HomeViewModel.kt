@@ -6,6 +6,7 @@ import com.example.plantify.data.local.entity.MyPlantEntity
 import com.example.plantify.data.local.entity.TaskScheduleEntity
 import com.example.plantify.data.remote.WeatherService
 import com.example.plantify.data.repository.PlantRepository
+import com.example.plantify.ui.theme.ThemeManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,9 +31,8 @@ class HomeViewModel(
     private val _tasks = MutableStateFlow<List<TaskScheduleEntity>>(emptyList())
     val tasks: StateFlow<List<TaskScheduleEntity>> = _tasks.asStateFlow()
 
-    // State cuaca berdasarkan wilayah permanen tanaman
-    private val _currentWeather = MutableStateFlow("Fetching weather...")
-    val currentWeather: StateFlow<String> = _currentWeather.asStateFlow()
+    // State cuaca menggunakan ThemeManager agar tersimpan secara global
+    val currentWeather: StateFlow<String> = ThemeManager.lastWeather
 
     init {
         loadData()
@@ -68,9 +68,7 @@ class HomeViewModel(
         viewModelScope.launch {
             val weather = weatherService.getCurrentWeather("32.73.20.1001")
             if (weather != null) {
-                _currentWeather.value = weather
-            } else {
-                _currentWeather.value = "Sunny, 28°C"
+                ThemeManager.setLastWeather(weather)
             }
         }
     }
