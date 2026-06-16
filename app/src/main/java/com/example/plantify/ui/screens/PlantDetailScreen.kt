@@ -2,39 +2,36 @@ package com.example.plantify.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.runtime.*
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.viewmodel.PlantDetailViewModel
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlantDetailScreen(
     plantId: String,
-    onBackClick: () -> Unit = {},
-    onGrowthProgressClick: () -> Unit = {},
-    viewModel: PlantDetailViewModel = viewModel()
+    viewModel: PlantDetailViewModel,
+    onBackClick: () -> Unit = {}
 ) {
     LaunchedEffect(plantId) {
         viewModel.loadPlant(plantId)
     }
 
     val plant by viewModel.plantDetail.collectAsState()
+    val isAiLoading by viewModel.isAiLoading.collectAsState()
 
     if (plant == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -52,7 +49,7 @@ fun PlantDetailScreen(
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
     ) {
-        // Header
+        // Header — emoji + plant-specific name and category
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -68,12 +65,33 @@ fun PlantDetailScreen(
                     )
                 }
                 Column {
-                    Text(
-                        text = "${p.emoji} ${p.name}",
-                        color = Color.White,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = p.emoji, fontSize = 24.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = p.name,
+                            color = Color.White,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = p.difficultyColor
+                        ) {
+                            Text(
+                                text = p.difficulty,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = when (p.difficulty) {
+                                    "Medium" -> Color(0xFFE65100)
+                                    "Hard" -> Color(0xFFC62828)
+                                    else -> Color(0xFF2E7D32)
+                                }
+                            )
+                        }
+                    }
                     Text(
                         text = p.category,
                         color = Color.White.copy(alpha = 0.8f),
@@ -88,96 +106,29 @@ fun PlantDetailScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // Card: Progress
+            // Card: About
             DetailCard {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Growth Progress", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = p.difficultyColor
-                    ) {
-                        Text(
-                            text = p.difficulty,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = if (p.difficulty == "Medium") Color(0xFFE65100) else Color(0xFF2E7D32)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("About", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    if (isAiLoading) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(14.dp),
+                            color = PlantifyMediumGreen,
+                            strokeWidth = 2.dp
                         )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Stage timeline
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    p.stages.forEachIndexed { index, stage ->
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Box(
-                                modifier = Modifier
-                                    .size(12.dp)
-                                    .background(
-                                        if (index <= p.currentStageIndex) PlantifyMediumGreen else Color(0xFFBDC3C7),
-                                        CircleShape
-                                    )
-                            )
-                            Text(stage, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.padding(top = 4.dp))
-                        }
-                        if (index < p.stages.size - 1) {
-                            HorizontalDivider(
-                                modifier = Modifier.weight(1f).padding(bottom = 14.dp),
-                                color = if (index < p.currentStageIndex) PlantifyMediumGreen else MaterialTheme.colorScheme.outlineVariant,
-                                thickness = 2.dp
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                LinearProgressIndicator(
-                    progress = { p.progress },
-                    modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
-                    color = PlantifyMediumGreen,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    p.description,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                    lineHeight = 22.sp
                 )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text("Day ${p.currentDay} of ${p.totalDays}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                    Text("${(p.progress * 100).toInt()}% complete", fontSize = 13.sp, color = PlantifyMediumGreen, fontWeight = FontWeight.Medium)
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Button(
-                    onClick = onGrowthProgressClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = PlantifyMediumGreen),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Text("View Full Growth Progress", fontWeight = FontWeight.Bold)
-                }
             }
 
-            // Card: Deskripsi
-            DetailCard {
-                Text("About", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(p.description, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f), lineHeight = 22.sp)
-            }
-
-            // Card: Info Perawatan
+            // Card: Care Guide
             DetailCard {
                 Text("Care Guide", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Spacer(modifier = Modifier.height(12.dp))
@@ -199,7 +150,7 @@ fun PlantDetailScreen(
                 }
             }
 
-            // Card: Tips
+            // Card: Growing Tips
             DetailCard {
                 Text("Growing Tips", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Spacer(modifier = Modifier.height(12.dp))
@@ -215,7 +166,12 @@ fun PlantDetailScreen(
                             modifier = Modifier.size(18.dp).padding(top = 2.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text(tip, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f), lineHeight = 20.sp)
+                        Text(
+                            tip,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                            lineHeight = 20.sp
+                        )
                     }
                 }
             }

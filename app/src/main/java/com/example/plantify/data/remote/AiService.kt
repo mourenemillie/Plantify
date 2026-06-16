@@ -38,18 +38,58 @@ class AiService {
         try {
             val response = generativeModel.generateContent(prompt)
             var cleanText = response.text ?: return@withContext null
-            
+
             // Handle markdown code blocks if the AI includes them
             if (cleanText.contains("```json")) {
                 cleanText = cleanText.substringAfter("```json").substringBefore("```").trim()
             } else if (cleanText.contains("```")) {
                 cleanText = cleanText.substringAfter("```").substringBeforeLast("```").trim()
             }
-            
+
             return@withContext cleanText
         } catch (e: Exception) {
             Log.e("AiService", "Error generating care schedule", e)
             return@withContext "ERROR: ${e.javaClass.simpleName} - ${e.message}"
+        }
+    }
+
+    // Returns a raw JSON string describing the plant, or null on failure.
+    suspend fun generatePlantInfo(plantName: String): String? = withContext(Dispatchers.IO) {
+        val prompt = """
+            Generate beginner-friendly growing information about the plant: '$plantName'.
+
+            Return ONLY a raw JSON object (no markdown, no code fences) with this exact structure:
+            {
+              "description": "A 2-3 sentence beginner-friendly description: what the plant is and why it's nice to grow.",
+              "watering": "Watering frequency in plain English (e.g., 'Every 2 days').",
+              "sunlight": "Sunlight needs (e.g., 'Full sun (6-8 hrs)' or 'Partial shade (4-6 hrs)').",
+              "temperature": "Ideal temperature range in Celsius (e.g., '20-27°C').",
+              "fertilizing": "Fertilizing frequency in plain English (e.g., 'Every 2 weeks').",
+              "tips": [
+                "Concise actionable growing tip 1.",
+                "Concise actionable growing tip 2.",
+                "Concise actionable growing tip 3.",
+                "Concise actionable growing tip 4."
+              ]
+            }
+
+            Keep each value short and practical. Use English. No markdown tags.
+        """.trimIndent()
+
+        try {
+            val response = generativeModel.generateContent(prompt)
+            var cleanText = response.text ?: return@withContext null
+
+            if (cleanText.contains("```json")) {
+                cleanText = cleanText.substringAfter("```json").substringBefore("```").trim()
+            } else if (cleanText.contains("```")) {
+                cleanText = cleanText.substringAfter("```").substringBeforeLast("```").trim()
+            }
+
+            return@withContext cleanText
+        } catch (e: Exception) {
+            Log.e("AiService", "Error generating plant info", e)
+            return@withContext null
         }
     }
 }

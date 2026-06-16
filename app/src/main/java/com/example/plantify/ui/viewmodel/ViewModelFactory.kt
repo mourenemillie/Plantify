@@ -33,6 +33,9 @@ class ViewModelFactory(private val repository: PlantRepository) : ViewModelProvi
             modelClass.isAssignableFrom(AlertsViewModel::class.java) -> {
                 AlertsViewModel(repository) as T
             }
+            modelClass.isAssignableFrom(PlantDetailViewModel::class.java) -> {
+                PlantDetailViewModel(repository) as T
+            }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }
