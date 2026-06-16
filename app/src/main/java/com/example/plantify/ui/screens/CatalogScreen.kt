@@ -23,7 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.plantify.data.PlantCategory
+import androidx.compose.ui.res.stringResource
+import com.example.plantify.R
+import com.example.plantify.data.local.entity.PlantCatalogEntity
 import com.example.plantify.ui.theme.PlantifyMediumGreen
 import com.example.plantify.ui.theme.PlantifyTextGray
 import com.example.plantify.ui.viewmodel.CatalogViewModel
@@ -32,23 +34,24 @@ import com.example.plantify.ui.viewmodel.CatalogViewModel
 @Composable
 fun CatalogScreen(
     viewModel: CatalogViewModel = viewModel(),
-    onAddPlantClick: () -> Unit = {},
+    onAddNewTypeClick: () -> Unit = {},
+    onAddPlantClick: (Int) -> Unit = {},
     onPlantClick: (String) -> Unit = {}
 ) {
-    val plants by viewModel.plants.collectAsState()
+    val catalog by viewModel.catalog.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
 
     Scaffold(
-        containerColor = Color(0xFFF8F9FA),
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onAddPlantClick,
+                onClick = onAddNewTypeClick,
                 containerColor = PlantifyMediumGreen,
                 contentColor = Color.White,
                 shape = CircleShape,
                 elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Plant")
+                Icon(Icons.Default.Add, contentDescription = "Add New Plant Type")
             }
         }
     ) { innerPadding ->
@@ -56,7 +59,7 @@ fun CatalogScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color(0xFFF8F9FA))
+                .background(MaterialTheme.colorScheme.background)
         ) {
             Box(
                 modifier = Modifier
@@ -69,12 +72,12 @@ fun CatalogScreen(
             ) {
                 Column {
                     Text(
-                        text = "Discover",
+                        text = stringResource(R.string.discover),
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 16.sp
                     )
                     Text(
-                        text = "Plant Catalog",
+                        text = stringResource(R.string.plant_catalog),
                         color = Color.White,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.ExtraBold
@@ -90,7 +93,7 @@ fun CatalogScreen(
                 // Modern Search Bar
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.surface,
                     shadowElevation = 8.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -98,14 +101,16 @@ fun CatalogScreen(
                         value = searchQuery,
                         onValueChange = { viewModel.onSearchQueryChanged(it) },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Search plants...", color = Color.Gray, fontSize = 15.sp) },
+                        placeholder = { Text(stringResource(R.string.search_plants), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontSize = 15.sp) },
                         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = PlantifyMediumGreen) },
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
-                            cursorColor = PlantifyMediumGreen
+                            cursorColor = PlantifyMediumGreen,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         ),
                         singleLine = true
                     )
@@ -118,11 +123,11 @@ fun CatalogScreen(
                     contentPadding = PaddingValues(bottom = 80.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(plants) { plant ->
+                    items(catalog) { plant ->
                         CatalogPlantItem(
                             plant = plant,
-                            onAddClick = onAddPlantClick,
-                            onItemClick = { onPlantClick(plant.name) }
+                            onAddClick = { onAddPlantClick(plant.id_tanaman) },
+                            onItemClick = { onPlantClick(plant.id_tanaman.toString()) }
                         )
                     }
                 }
@@ -132,13 +137,14 @@ fun CatalogScreen(
 }
 
 @Composable
-fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: () -> Unit) {
+fun CatalogPlantItem(plant: PlantCatalogEntity, onAddClick: () -> Unit, onItemClick: () -> Unit = {}) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onItemClick() },
+            .clickable { onItemClick() }
+            .padding(vertical = 8.dp),
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 4.dp
     ) {
         Row(
@@ -147,54 +153,40 @@ fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: 
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Image Container
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFFF1F8E9)),
-                contentAlignment = Alignment.Center
-            ) {
-                if (plant.imageRes != 0) {
-                    Image(
-                        painter = painterResource(id = plant.imageRes),
-                        contentDescription = plant.name,
-                        modifier = Modifier.size(40.dp)
-                    )
-                } else {
-                    Text(text = "🌱", fontSize = 28.sp)
-                }
-            }
+            Text(text = plant.emoji_icon ?: "🌱", fontSize = 24.sp)
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = plant.name,
+                    text = plant.nama_tanaman,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color(0xFF1A212E)
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
-                Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val difficultyColor = when (plant.difficulty) {
+                        "Easy" -> Color(0xFFE8F5E9)
+                        "Medium" -> Color(0xFFFFF3E0)
+                        else -> Color(0xFFF5F5F5)
+                    }
                     Surface(
-                        color = plant.difficultyColor.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(6.dp)
+                        color = difficultyColor,
+                        shape = RoundedCornerShape(4.dp)
                     ) {
                         Text(
-                            text = plant.difficulty,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            text = plant.difficulty ?: "Easy",
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             fontSize = 11.sp,
-                            color = plant.difficultyColor,
-                            fontWeight = FontWeight.Bold
+                            color = if (plant.difficulty == "Medium") Color(0xFFE65100) else Color(0xFF2E7D32),
+                            fontWeight = FontWeight.Medium
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "${plant.duration} • ${plant.watering}",
+                        text = " • ${plant.durasi_panen} days • Siram ${plant.interval_siram} hari",
                         fontSize = 12.sp,
-                        color = PlantifyTextGray,
-                        fontWeight = FontWeight.Medium
+                        color = PlantifyTextGray
                     )
                 }
             }
@@ -202,14 +194,14 @@ fun CatalogPlantItem(plant: PlantCategory, onAddClick: () -> Unit, onItemClick: 
             IconButton(
                 onClick = onAddClick,
                 modifier = Modifier
-                    .size(40.dp)
-                    .background(PlantifyMediumGreen, CircleShape)
+                    .size(32.dp)
+                    .border(1.dp, Color(0xFFB9F1E1), CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Add",
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp)
+                    tint = PlantifyMediumGreen,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }

@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,9 +24,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.plantify.data.AlertItem
 import com.example.plantify.ui.viewmodel.AlertsViewModel
+import com.example.plantify.ui.viewmodel.ViewModelFactory
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
-fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
+fun AlertsScreen(
+    viewModel: AlertsViewModel = viewModel(),
+    onBackClick: () -> Unit = {}
+) {
     val alerts by viewModel.alerts.collectAsState()
 
     Column(
@@ -32,46 +39,65 @@ fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 32.dp, start = 24.dp, end = 24.dp, bottom = 16.dp),
+                .padding(top = 32.dp, start = 8.dp, end = 24.dp, bottom = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Notifications",
-                style = TextStyle(
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+                Text(
+                    text = "Notifications",
+                    style = TextStyle(
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
                 )
-            )
+            }
             Text(
                 text = "Mark all read",
                 modifier = Modifier.clickable { viewModel.markAllAsRead() },
                 style = TextStyle(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF00B894)
+                    color = MaterialTheme.colorScheme.primary
                 )
             )
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 24.dp)
-        ) {
-            items(alerts) { alert ->
-                NotificationItem(
-                    title = alert.title,
-                    desc = alert.desc,
-                    time = alert.time,
-                    icon = alert.icon,
-                    iconBgColor = alert.iconBgColor,
-                    isUnread = alert.isUnread
-                )
+        if (alerts.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("🔔", fontSize = 56.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("No notifications", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onBackground)
+                    Text("Add plants to get care reminders", fontSize = 14.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 24.dp)
+            ) {
+                items(alerts) { alert ->
+                    NotificationItem(
+                        title = alert.title,
+                        desc = alert.desc,
+                        time = alert.time,
+                        icon = alert.icon,
+                        iconBgColor = alert.iconBgColor,
+                        isUnread = alert.isUnread
+                    )
+                }
             }
         }
     }
@@ -124,24 +150,25 @@ fun NotificationItem(
                         text = title,
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
+                            fontSize = 15.sp,
                             color = MaterialTheme.colorScheme.onSurface
-                        )
+                        ),
+                        modifier = Modifier.weight(1f)
                     )
                     if (isUnread) {
                         Box(
                             modifier = Modifier
                                 .size(8.dp)
-                                .background(Color(0xFF00B894), shape = CircleShape)
+                                .background(MaterialTheme.colorScheme.primary, shape = CircleShape)
                         )
                     }
                 }
                 Text(
                     text = desc,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    fontSize = 14.sp
+                    fontSize = 13.sp
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = time,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),

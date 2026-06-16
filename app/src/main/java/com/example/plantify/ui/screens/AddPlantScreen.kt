@@ -7,7 +7,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Star
@@ -20,72 +19,65 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.plantify.ui.theme.PlantifyLightGreen
 import com.example.plantify.ui.theme.PlantifyMediumGreen
+import com.example.plantify.ui.theme.PlantifyLightGreen
+import com.example.plantify.ui.theme.PlantifyDarkGreen
 import com.example.plantify.ui.viewmodel.AddPlantViewModel
-import com.example.plantify.ui.viewmodel.AiRecommendationState
-import com.example.plantify.ui.viewmodel.PlantOption
 import kotlinx.coroutines.launch
 
 @Composable
 fun AddPlantScreen(
     viewModel: AddPlantViewModel = viewModel(),
-    onBackClick: () -> Unit = {},
-    onPlantSaved: () -> Unit = {}
+    preSelectedPlantId: Int = 0,
+    onSuccess: () -> Unit = {}
 ) {
-    val selectedPlant by viewModel.selectedPlant.collectAsState()
-    val plantingDay by viewModel.plantingDay.collectAsState()
-    val plantingMonth by viewModel.plantingMonth.collectAsState()
-    val plantingYear by viewModel.plantingYear.collectAsState()
-    val location by viewModel.location.collectAsState()
-    val plantError by viewModel.plantError.collectAsState()
-    val dateError by viewModel.dateError.collectAsState()
-    val aiState by viewModel.aiState.collectAsState()
-
     val scope = rememberCoroutineScope()
     var showSuccessDialog by remember { mutableStateOf(false) }
-    var showPlantDropdown by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        viewModel.savedEvent.collect {
-            showSuccessDialog = true
-        }
+    LaunchedEffect(preSelectedPlantId) {
+        viewModel.loadCatalog(preSelectedPlantId)
     }
 
-    if (showSuccessDialog) {
-        SuccessDialog(
-            plantName = selectedPlant?.name ?: "",
-            onDismiss = {
-                showSuccessDialog = false
-                onPlantSaved()
-            }
-        )
-    }
+    val selectedPlant by viewModel.selectedPlant.collectAsState()
+    val plantingDate by viewModel.plantingDate.collectAsState()
+    val locationName by viewModel.locationName.collectAsState()
+    val aiRecommendation by viewModel.aiRecommendation.collectAsState()
+    val isLoadingAi by viewModel.isLoadingAi.collectAsState()
+
+    val catalog by viewModel.catalog.collectAsState()
+    val provinces by viewModel.provinces.collectAsState()
+    val selectedProvince by viewModel.selectedProvince.collectAsState()
+    val regencies by viewModel.regencies.collectAsState()
+    val selectedRegency by viewModel.selectedRegency.collectAsState()
+    val districts by viewModel.districts.collectAsState()
+    val selectedDistrict by viewModel.selectedDistrict.collectAsState()
+    val villages by viewModel.villages.collectAsState()
+    val selectedVillage by viewModel.selectedVillage.collectAsState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8F9FA))
+            .background(Color.White)
     ) {
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(PlantifyMediumGreen)
-                .padding(top = 16.dp, bottom = 24.dp, start = 8.dp, end = 16.dp)
+                .padding(top = 16.dp, bottom = 24.dp, start = 24.dp, end = 24.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White
-                    )
-                }
-                Column {
-                    Text("Step 1 of 1", color = Color.White.copy(alpha = 0.7f), fontSize = 13.sp)
-                    Text("Add New Plant", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                }
+            Column {
+                Text(
+                    text = "Step 1 of 2",
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Add New Plant",
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
 
@@ -96,196 +88,142 @@ fun AddPlantScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
+            // // Pilih Tanaman
             FormCard {
-                Text("Select Plant", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                Text("Select Plant", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(8.dp))
-                Box {
-                    OutlinedTextField(
-                        value = if (selectedPlant != null) "${selectedPlant!!.emoji} ${selectedPlant!!.name} (~${selectedPlant!!.totalDays} days)" else "",
-                        onValueChange = {},
-                        readOnly = true,
-                        placeholder = { Text("Choose a plant...", color = Color.Gray) },
-                        modifier = Modifier.fillMaxWidth(),
-                        trailingIcon = {
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = PlantifyMediumGreen)
-                        },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            disabledBorderColor = if (plantError) Color.Red else Color.LightGray,
-                            disabledTextColor = Color.Black
-                        ),
-                        enabled = false
-                    )
-                    Box(modifier = Modifier.matchParentSize().clickable { showPlantDropdown = true })
-                    DropdownMenu(
-                        expanded = showPlantDropdown,
-                        onDismissRequest = { showPlantDropdown = false }
-                    ) {
-                        viewModel.plantOptions.forEach { option ->
-                            DropdownMenuItem(
-                                text = {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(option.emoji, fontSize = 20.sp)
-                                        Spacer(modifier = Modifier.width(10.dp))
-                                        Column {
-                                            Text(option.name, fontWeight = FontWeight.Medium, fontSize = 14.sp)
-                                            Text("~${option.totalDays} days to harvest", fontSize = 12.sp, color = Color.Gray)
-                                        }
-                                    }
-                                },
-                                onClick = {
-                                    viewModel.selectPlant(option)
-                                    showPlantDropdown = false
-                                }
-                            )
-                        }
-                    }
-                }
-                if (plantError) {
-                    Text("Please select a plant", color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+                LocationDropdown("Plant Type", catalog.map { it.nama_tanaman }, selectedPlant?.nama_tanaman) { name ->
+                    catalog.find { it.nama_tanaman == name }?.let { viewModel.selectPlant(it) }
                 }
             }
 
+            // // Tanggal Tanam
             FormCard {
-                Text("Planting Date", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    DateField(value = plantingDay, onValueChange = viewModel::updateDay, placeholder = "DD", modifier = Modifier.weight(1f), isError = dateError)
-                    DateField(value = plantingMonth, onValueChange = viewModel::updateMonth, placeholder = "MM", modifier = Modifier.weight(1f), isError = dateError)
-                    DateField(value = plantingYear, onValueChange = viewModel::updateYear, placeholder = "YYYY", modifier = Modifier.weight(2f), isError = dateError)
-                }
-                if (dateError) {
-                    Text("Please enter a valid date", color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
-                }
-            }
-
-            FormCard {
-                Text("Location / Pot Name", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = location,
-                    onValueChange = viewModel::updateLocation,
-                    placeholder = { Text("e.g. Balcony pot #1", color = Color.Gray) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color.LightGray,
-                        focusedBorderColor = PlantifyMediumGreen
-                    )
+                InputField(
+                    label = "Planting date",
+                    value = plantingDate,
+                    onValueChange = { },
+                    placeholder = "DD/MM/YYYY",
+                    readOnly = true
                 )
             }
 
+            // // Lokasi Wilayah Permanen Pot
+            FormCard {
+                InputField(
+                    label = "Location / pot name",
+                    value = locationName,
+                    onValueChange = { viewModel.updateLocationName(it) },
+                    placeholder = "e.g. Balcony pot #1"
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = "Location for Weather", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LocationDropdown("Province", provinces.map { it.name }, selectedProvince?.name) { name ->
+                    provinces.find { it.name == name }?.let { viewModel.selectProvince(it) }
+                }
+                LocationDropdown("City/Regency", regencies.map { it.name }, selectedRegency?.name) { name ->
+                    regencies.find { it.name == name }?.let { viewModel.selectRegency(it) }
+                }
+                LocationDropdown("District", districts.map { it.name }, selectedDistrict?.name) { name ->
+                    districts.find { it.name == name }?.let { viewModel.selectDistrict(it) }
+                }
+                LocationDropdown("Village", villages.map { it.name }, selectedVillage?.name) { name ->
+                    villages.find { it.name == name }?.let { viewModel.selectVillage(it) }
+                }
+            }
+
+            // // AI Smart Advisor Card
             Card(
-                colors = CardDefaults.cardColors(containerColor = PlantifyLightGreen.copy(alpha = 0.4f)),
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.fillMaxWidth()
+                colors = CardDefaults.cardColors(containerColor = PlantifyLightGreen.copy(alpha = 0.15f)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+                border = androidx.compose.foundation.BorderStroke(1.dp, PlantifyMediumGreen)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (isLoadingAi) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), color = PlantifyMediumGreen)
+                    } else {
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = null,
-                            tint = Color(0xFF0D674E),
+                            tint = PlantifyMediumGreen,
                             modifier = Modifier.size(20.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
                         Text(
                             text = "Smart Care Advisor (AI)",
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0D674E),
-                            fontSize = 15.sp
+                            color = PlantifyDarkGreen,
+                            fontSize = 14.sp
                         )
-                    }
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    when (aiState) {
-                        is AiRecommendationState.Idle -> {
+                        if (isLoadingAi) {
+                            Text("AI sedang membuat jadwal perawatan...", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
+                        } else if (aiRecommendation.isNotEmpty()) {
+                            Text(text = aiRecommendation, fontSize = 13.sp, color = Color.Black, lineHeight = 18.sp)
+                        } else {
                             Text(
-                                text = "Fill in plant and date above, then tap the button below to get a personalized care schedule from AI.",
+                                text = "Pilih tanaman dan lokasi di atas, lalu AI akan otomatis memikirkan jadwal perawatan yang pas untukmu.",
                                 fontSize = 13.sp,
-                                color = Color(0xFF0D674E),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                 lineHeight = 18.sp
                             )
                         }
-                        is AiRecommendationState.Loading -> {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(18.dp),
-                                    color = PlantifyMediumGreen,
-                                    strokeWidth = 2.dp
-                                )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text("Generating recommendation...", fontSize = 13.sp, color = Color(0xFF0D674E))
-                            }
-                        }
-                        is AiRecommendationState.Success -> {
-                            Text(
-                                text = (aiState as AiRecommendationState.Success).recommendation,
-                                fontSize = 13.sp,
-                                color = Color(0xFF0D674E),
-                                lineHeight = 19.sp
-                            )
-                        }
-                        is AiRecommendationState.Error -> {
-                            Text(
-                                text = (aiState as AiRecommendationState.Error).message,
-                                fontSize = 13.sp,
-                                color = Color.Red
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedButton(
-                        onClick = { viewModel.getAiRecommendation() },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF0D674E)),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF0D674E)),
-                        enabled = aiState !is AiRecommendationState.Loading
-                    ) {
-                        Text(
-                            text = if (aiState is AiRecommendationState.Success) "🔄 Regenerate" else "✨ Get AI Recommendation",
-                            fontWeight = FontWeight.Bold
-                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
+            // // Tombol Simpan Aplikasi
             Button(
-                onClick = { scope.launch { viewModel.savePlant() } },
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PlantifyMediumGreen,
-                    disabledContainerColor = Color(0xFFB0BEC5)
-                ),
+                onClick = { viewModel.savePlantWithAiSchedule { showSuccessDialog = true } },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PlantifyMediumGreen),
                 shape = RoundedCornerShape(12.dp),
-                enabled = aiState is AiRecommendationState.Success
+                enabled = !isLoadingAi && selectedPlant != null && selectedVillage != null
             ) {
-                Text("Use AI Schedule", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Use AI Schedule & Save", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             OutlinedButton(
-                onClick = { scope.launch { viewModel.savePlant() } },
+                onClick = {
+                    viewModel.savePlantManually(locationName.ifBlank { selectedPlant?.nama_tanaman ?: "Tanaman" }) {
+                        showSuccessDialog = true
+                    }
+                },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = PlantifyMediumGreen),
-                border = androidx.compose.foundation.BorderStroke(1.dp, PlantifyMediumGreen),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, PlantifyMediumGreen),
+                enabled = selectedPlant != null
             ) {
-                Text("Customize manually instead", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Save Plant Manually", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+
+    if (showSuccessDialog) {
+        SuccessDialog(
+            plantName = selectedPlant?.nama_tanaman ?: "Tanaman",
+            onDismiss = {
+                showSuccessDialog = false
+                onSuccess()
+            }
+        )
     }
 }
 
@@ -294,7 +232,7 @@ private fun FormCard(content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp), content = content)
@@ -302,26 +240,70 @@ private fun FormCard(content: @Composable ColumnScope.() -> Unit) {
 }
 
 @Composable
-private fun DateField(
+fun LocationDropdown(label: String, options: List<String>, selected: String?, onSelect: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+        Text(text = label, fontSize = 13.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+        Spacer(modifier = Modifier.height(4.dp))
+        Box {
+            OutlinedButton(
+                onClick = { expanded = true },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Text(
+                    text = selected ?: "Select $label",
+                    color = if (selected == null) Color.Gray else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = PlantifyMediumGreen)
+            }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            onSelect(option)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun InputField(
+    label: String,
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
-    isError: Boolean = false
+    readOnly: Boolean = false
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        placeholder = { Text(placeholder, color = Color.Gray, fontSize = 13.sp) },
-        modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
-        singleLine = true,
-        isError = isError,
-        colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = if (isError) Color.Red else Color.LightGray,
-            focusedBorderColor = PlantifyMediumGreen
+    Column(modifier = modifier) {
+        Text(text = label, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text(text = placeholder, color = Color.Gray, fontSize = 13.sp) },
+            shape = RoundedCornerShape(10.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedBorderColor = PlantifyMediumGreen,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface
+            ),
+            readOnly = readOnly,
+            singleLine = true
         )
-    )
+    }
 }
 
 @Composable
@@ -336,12 +318,12 @@ private fun SuccessDialog(plantName: String, onDismiss: () -> Unit) {
                 modifier = Modifier.size(48.dp)
             )
         },
-        title = { Text("Plant Added!", fontWeight = FontWeight.Bold, fontSize = 20.sp) },
+        title = { Text("Plant Added! 🌱", fontWeight = FontWeight.Bold, fontSize = 20.sp) },
         text = {
             Text(
-                text = "$plantName has been added to your garden. Track its growth in the Growth Progress screen.",
+                text = "$plantName has been added to your garden.\nCek Schedule dan Growth Progress untuk melihat jadwal perawatannya!",
                 fontSize = 14.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 lineHeight = 20.sp
             )
         },
@@ -351,7 +333,7 @@ private fun SuccessDialog(plantName: String, onDismiss: () -> Unit) {
                 colors = ButtonDefaults.buttonColors(containerColor = PlantifyMediumGreen),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Go to Home")
+                Text("Ke Home", color = Color.White)
             }
         },
         shape = RoundedCornerShape(16.dp)

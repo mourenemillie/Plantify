@@ -21,13 +21,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.plantify.data.GrowthNote
 import com.example.plantify.data.GrowthProgressItem
 import com.example.plantify.ui.theme.PlantifyMediumGreen
+import com.example.plantify.ui.viewmodel.GrowthNote
 import com.example.plantify.ui.viewmodel.GrowthProgressViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GrowthProgressScreen(
+    // Parameter default disesuaikan agar tidak error context mismatch
     viewModel: GrowthProgressViewModel = viewModel(),
     onBackClick: () -> Unit = {}
 ) {
@@ -64,20 +66,40 @@ fun GrowthProgressScreen(
             }
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(growthItems) { item ->
-                val plantNotes = notes[item.plantName] ?: emptyList()
-                GrowthCard(
-                    item = item,
-                    notes = plantNotes,
-                    onSaveNote = { noteText ->
-                        viewModel.addNote(item.plantName, noteText)
-                    }
-                )
+        if (growthItems.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("🌱", fontSize = 64.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "No plants yet!",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        "Add a plant in the Catalog tab",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(growthItems) { item ->
+                    val plantNotes = notes[item.plantName] ?: emptyList()
+                    GrowthCard(
+                        item = item,
+                        notes = plantNotes,
+                        onSaveNote = { noteText ->
+                            viewModel.addNote(item.plantName, noteText)
+                        }
+                    )
+                }
             }
         }
     }
@@ -89,10 +111,8 @@ fun GrowthCard(
     notes: List<GrowthNote>,
     onSaveNote: (String) -> Unit
 ) {
-    // State untuk dialog
     var showDialog by remember { mutableStateOf(false) }
 
-    // Tampilkan dialog kalau showDialog = true
     if (showDialog) {
         LogNoteDialog(
             plantName = item.plantName,
@@ -114,27 +134,45 @@ fun GrowthCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            // Nama tanaman + hari
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "${item.plantEmoji} ${item.plantName}",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-                Text(
-                    text = "Day ${item.currentDay} / ${item.totalDays}",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        modifier = Modifier.size(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = PlantifyMediumGreen.copy(alpha = 0.12f)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = item.plantEmoji,
+                                fontSize = 28.sp
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = item.plantName,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Day ${item.currentDay} of ${item.totalDays}",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Timeline stage
+            // // Timeline tahapan pertumbuhan tanaman
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -146,25 +184,21 @@ fun GrowthCard(
                             modifier = Modifier
                                 .size(14.dp)
                                 .background(
-                                    if (index <= item.currentStageIndex) Color(0xFF27AE60) else Color(0xFFBDC3C7),
+                                    if (index <= item.currentStageIndex) PlantifyMediumGreen else MaterialTheme.colorScheme.outlineVariant,
                                     CircleShape
                                 )
-                        ) {
-                            if (index == item.currentStageIndex) {
-                                Box(modifier = Modifier.fillMaxSize().background(Color.White, CircleShape))
-                            }
-                        }
+                        )
                         Text(
                             text = stage,
                             fontSize = 10.sp,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             modifier = Modifier.padding(top = 4.dp)
                         )
                     }
                     if (index < item.stages.size - 1) {
                         HorizontalDivider(
                             modifier = Modifier.weight(1f).padding(bottom = 14.dp),
-                            color = if (index < item.currentStageIndex) Color(0xFF27AE60) else Color(0xFFBDC3C7),
+                            color = if (index < item.currentStageIndex) PlantifyMediumGreen else MaterialTheme.colorScheme.outlineVariant,
                             thickness = 2.dp
                         )
                     }
@@ -173,32 +207,33 @@ fun GrowthCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Progress bar
             LinearProgressIndicator(
                 progress = { item.progress },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(8.dp)
                     .clip(CircleShape),
-                color = Color(0xFF27AE60),
+                color = PlantifyMediumGreen,
                 trackColor = MaterialTheme.colorScheme.outlineVariant
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Estimasi panen
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(44.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
-                    .padding(horizontal = 12.dp),
-                contentAlignment = Alignment.CenterStart
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(text = "Estimated harvest", fontSize = 14.sp, color = Color.Gray)
-                    Text(text = "~${item.estimateDate}", fontSize = 14.sp, color = Color.Gray)
-                }
+                Text(
+                    text = "${(item.progress * 100).toInt()}% complete",
+                    fontSize = 12.sp,
+                    color = PlantifyMediumGreen,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = item.estimateDate,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -212,14 +247,13 @@ fun GrowthCard(
                 Text(text = "+ Log today's growth note", fontWeight = FontWeight.Bold)
             }
 
-            // Tampilkan daftar catatan
             if (notes.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "Growth Notes",
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
-                    color = Color(0xFF333333)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 notes.forEach { note ->
@@ -236,7 +270,7 @@ fun NoteItem(note: GrowthNote) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFF9FBF9), RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
             .padding(12.dp),
         verticalAlignment = Alignment.Top
     ) {
@@ -248,9 +282,9 @@ fun NoteItem(note: GrowthNote) {
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
-            Text(text = note.note, fontSize = 13.sp, color = Color(0xFF333333))
+            Text(text = note.note, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = note.date, fontSize = 11.sp, color = Color.Gray)
+            Text(text = note.date, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
         }
     }
 }
@@ -277,7 +311,7 @@ fun LogNoteDialog(
                 Text(
                     text = plantName,
                     fontSize = 13.sp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 OutlinedTextField(
@@ -290,7 +324,7 @@ fun LogNoteDialog(
                     shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = PlantifyMediumGreen,
-                        unfocusedBorderColor = Color.LightGray
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     ),
                     maxLines = 5
                 )
@@ -308,7 +342,7 @@ fun LogNoteDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = Color.Gray)
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
             }
         },
         shape = RoundedCornerShape(16.dp)
