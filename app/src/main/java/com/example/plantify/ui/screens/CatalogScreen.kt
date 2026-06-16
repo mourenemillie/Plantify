@@ -39,23 +39,17 @@ fun CatalogScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val scrollState = rememberScrollState()
 
-    // Outer Box anchors the FAB without using a Scaffold, keeping the
-    // overall frame consistent with HomeScreen and ProfileScreen.
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Scrolling content column — same pattern as HomeScreen.
-        // verticalScroll is content-driven, so the floating offset(-40)
-        // doesn't leave a dead zone above the navbar.
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            // Header — same proportions as HomeHeader / ProfileHeader
-            // (240dp tall, 40dp bottom corners, 48dp vertical padding).
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -81,8 +75,6 @@ fun CatalogScreen(
                 }
             }
 
-            // Content column — floats up over the header by -40dp, same as
-            // the TasksCard in HomeScreen and the StatsCard in ProfileScreen.
             Column(
                 modifier = Modifier
                     .padding(horizontal = 24.dp)
@@ -149,8 +141,6 @@ fun CatalogScreen(
                     }
                 }
 
-                // Render items inline (no LazyColumn). Catalog size is small,
-                // and this avoids nesting a lazy list inside verticalScroll.
                 catalog.forEach { plant ->
                     CatalogPlantItem(
                         plant = plant,
@@ -160,13 +150,10 @@ fun CatalogScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
-                // Bottom breathing room so the last item clears the FAB
-                // and the navbar comfortably.
                 Spacer(modifier = Modifier.height(100.dp))
             }
         }
 
-        // FAB anchored bottom-end, matches the original placement.
         FloatingActionButton(
             onClick = onAddNewTypeClick,
             containerColor = PlantifyMediumGreen,
