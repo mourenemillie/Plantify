@@ -32,6 +32,7 @@ class ProfileViewModel(private val repository: PlantRepository) : ViewModel() {
     }
 
     private fun loadData() {
+        // COROUTINE 1: Mengamati data tanaman secara real-time dari database lokal (Room/SQLite via Repository).
         viewModelScope.launch {
             repository.myPlants.collect {
                 _plantsCount.value = it.size

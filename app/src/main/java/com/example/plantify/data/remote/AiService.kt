@@ -11,7 +11,8 @@ class AiService {
         modelName = "gemini-2.5-flash",
         apiKey = BuildConfig.GEMINI_API_KEY
     )
-
+    // SECTION: METHOD 1 - GENERATE CARE SCHEDULE
+    // Fungsi asinkronus (suspend) untuk membuat jadwal perawatan tanaman secara dinamis berdasarkan kondisi dan cuaca saat ini.
     // Return String? (Null on unknown error, but here we will return "ERROR: msg" if it fails)
     suspend fun generateCareSchedule(plantName: String, condition: String, weatherContext: String? = null): String? = withContext(Dispatchers.IO) {
         val weatherInfo = if (weatherContext != null) "The current weather in the user's location is: $weatherContext." else ""
@@ -36,6 +37,7 @@ class AiService {
         """.trimIndent()
 
         try {
+            // MENGIRIM PROMPNYA KE SERVER GEMINIAI
             val response = generativeModel.generateContent(prompt)
             var cleanText = response.text ?: return@withContext null
 
@@ -54,6 +56,7 @@ class AiService {
     }
 
     // Returns a raw JSON string describing the plant, or null on failure.
+    // SECTION: METHOD 2 - GENERATE PLANT INFO
     suspend fun generatePlantInfo(plantName: String): String? = withContext(Dispatchers.IO) {
         val prompt = """
             Generate beginner-friendly growing information about the plant: '$plantName'.

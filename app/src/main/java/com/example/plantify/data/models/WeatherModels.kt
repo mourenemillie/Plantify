@@ -15,8 +15,8 @@ data class WeatherData(
 @Serializable
 data class WeatherForecast(
     val datetime: String,
-    val t: String? = null,
-    val hu: String? = null,
+    val t: Int? = null,
+    val hu: Int? = null,
     val weather_desc: String? = null,
-    val ws: String? = null
+    val ws: Double? = null
 )

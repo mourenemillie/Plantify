@@ -96,20 +96,27 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = viewModel()) {
 @Composable
 fun ScheduleCard(item: TaskScheduleEntity, onToggle: () -> Unit) {
     val isDone = item.status_tugas == "Done"
-    val iconRes = when (item.jenis_tugas) {
-        "Watering" -> R.drawable.ic_water_drop
-        "Fertilizing" -> R.drawable.ic_bolt
+    val normalizedType = item.jenis_tugas.lowercase()
+    val iconRes = when {
+        normalizedType.contains("watering") || normalizedType.contains("penyiraman") -> R.drawable.ic_water_drop
+        normalizedType.contains("fertilizing") || normalizedType.contains("pemupukan") -> R.drawable.ic_bolt
         else -> R.drawable.ic_book
     }
-    val iconTint = when (item.jenis_tugas) {
-        "Watering" -> PlantifyWaterTeal
-        "Fertilizing" -> PlantifyFertilizerAmber
+    val iconTint = when {
+        normalizedType.contains("watering") || normalizedType.contains("penyiraman") -> PlantifyWaterTeal
+        normalizedType.contains("fertilizing") || normalizedType.contains("pemupukan") -> PlantifyFertilizerAmber
         else -> PlantifyIconGreen
     }
-    val iconBg = when (item.jenis_tugas) {
-        "Watering" -> PlantifyWaterTealBg
-        "Fertilizing" -> PlantifyFertilizerAmberBg
+    val iconBg = when {
+        normalizedType.contains("watering") || normalizedType.contains("penyiraman") -> PlantifyWaterTealBg
+        normalizedType.contains("fertilizing") || normalizedType.contains("pemupukan") -> PlantifyFertilizerAmberBg
         else -> Color(0xFFE8F5E9)
+    }
+
+    val displayTitle = when {
+        normalizedType.contains("watering") || normalizedType.contains("penyiraman") -> stringResource(R.string.task_watering)
+        normalizedType.contains("fertilizing") || normalizedType.contains("pemupukan") -> stringResource(R.string.task_fertilizing)
+        else -> item.jenis_tugas
     }
 
     Card(
@@ -164,7 +171,7 @@ fun ScheduleCard(item: TaskScheduleEntity, onToggle: () -> Unit) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = item.jenis_tugas,
+                    text = displayTitle,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onSurface

@@ -216,21 +216,28 @@ private fun TasksCard(tasks: List<TaskScheduleEntity>) {
             Spacer(modifier = Modifier.height(16.dp))
 
             tasks.forEach { task ->
-                val iconRes = when (task.jenis_tugas) {
-                    "Watering" -> R.drawable.ic_water_drop
-                    "Fertilizing" -> R.drawable.ic_bolt
+                val normalizedType = task.jenis_tugas.lowercase()
+                val iconRes = when {
+                    normalizedType.contains("watering") || normalizedType.contains("penyiraman") -> R.drawable.ic_water_drop
+                    normalizedType.contains("fertilizing") || normalizedType.contains("pemupukan") -> R.drawable.ic_bolt
                     else -> R.drawable.ic_book
                 }
-                val iconTint = when (task.jenis_tugas) {
-                    "Watering" -> PlantifyWaterTeal
-                    "Fertilizing" -> PlantifyFertilizerAmber
+                val iconTint = when {
+                    normalizedType.contains("watering") || normalizedType.contains("penyiraman") -> PlantifyWaterTeal
+                    normalizedType.contains("fertilizing") || normalizedType.contains("pemupukan") -> PlantifyFertilizerAmber
                     else -> PlantifyIconGreen
+                }
+
+                val displayTitle = when {
+                    normalizedType.contains("watering") || normalizedType.contains("penyiraman") -> stringResource(R.string.task_watering)
+                    normalizedType.contains("fertilizing") || normalizedType.contains("pemupukan") -> stringResource(R.string.task_fertilizing)
+                    else -> task.jenis_tugas
                 }
 
                 TaskItem(
                     iconRes = iconRes,
                     iconTint = iconTint,
-                    title = task.jenis_tugas,
+                    title = displayTitle,
                     subtitle = "Plant ID: ${task.id_kebun}",
                     time = task.waktu_eksekusi
                 )

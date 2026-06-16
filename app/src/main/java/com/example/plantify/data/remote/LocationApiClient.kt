@@ -12,6 +12,7 @@ private val sharedOkHttpClient: OkHttpClient by lazy {
         .readTimeout(30, TimeUnit.SECONDS)
         .addInterceptor { chain: Interceptor.Chain ->
             val originalRequest = chain.request()
+            //biar ga di anggap bot
             val requestWithUserAgent = originalRequest.newBuilder()
                 .header("User-Agent", "PlantifyApp/1.0")
                 .build()
