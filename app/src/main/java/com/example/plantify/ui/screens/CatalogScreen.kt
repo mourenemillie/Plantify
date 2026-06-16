@@ -3,12 +3,11 @@ package com.example.plantify.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
@@ -16,14 +15,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.ui.res.stringResource
 import com.example.plantify.R
 import com.example.plantify.data.local.entity.PlantCatalogEntity
 import com.example.plantify.ui.theme.PlantifyMediumGreen
@@ -40,57 +37,58 @@ fun CatalogScreen(
 ) {
     val catalog by viewModel.catalog.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val scrollState = rememberScrollState()
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddNewTypeClick,
-                containerColor = PlantifyMediumGreen,
-                contentColor = Color.White,
-                shape = CircleShape,
-                elevation = FloatingActionButtonDefaults.elevation(8.dp)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add New Plant Type")
-            }
-        }
-    ) { innerPadding ->
+    // Outer Box anchors the FAB without using a Scaffold, keeping the
+    // overall frame consistent with HomeScreen and ProfileScreen.
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        // Scrolling content column — same pattern as HomeScreen.
+        // verticalScroll is content-driven, so the floating offset(-40)
+        // doesn't leave a dead zone above the navbar.
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.background)
+                .verticalScroll(scrollState)
         ) {
+            // Header — same proportions as HomeHeader / ProfileHeader
+            // (240dp tall, 40dp bottom corners, 48dp vertical padding).
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(160.dp)
                     .background(
                         color = PlantifyMediumGreen,
-                        shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                        shape = RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp)
                     )
-                    .padding(start = 24.dp, end = 24.dp, top = 20.dp, bottom = 40.dp)
+                    .padding(horizontal = 24.dp, vertical = 28.dp)
             ) {
                 Column {
                     Text(
                         text = stringResource(R.string.discover),
                         color = Color.White.copy(alpha = 0.8f),
-                        fontSize = 16.sp
+                        fontSize = 14.sp
                     )
                     Text(
                         text = stringResource(R.string.plant_catalog),
                         color = Color.White,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.ExtraBold
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
 
+            // Content column — floats up over the header by -40dp, same as
+            // the TasksCard in HomeScreen and the StatsCard in ProfileScreen.
             Column(
-                modifier = Modifier.padding(horizontal = 24.dp)
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .offset(y = (-40).dp)
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Modern Search Bar
+                // Floating search bar
                 Surface(
                     shape = RoundedCornerShape(16.dp),
                     color = MaterialTheme.colorScheme.surface,
@@ -101,8 +99,16 @@ fun CatalogScreen(
                         value = searchQuery,
                         onValueChange = { viewModel.onSearchQueryChanged(it) },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text(stringResource(R.string.search_plants), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontSize = 15.sp) },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = PlantifyMediumGreen) },
+                        placeholder = {
+                            Text(
+                                stringResource(R.string.search_plants),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                fontSize = 15.sp
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Default.Search, contentDescription = null, tint = PlantifyMediumGreen)
+                        },
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
@@ -116,22 +122,62 @@ fun CatalogScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 80.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(catalog) { plant ->
-                        CatalogPlantItem(
-                            plant = plant,
-                            onAddClick = { onAddPlantClick(plant.id_tanaman) },
-                            onItemClick = { onPlantClick(plant.id_tanaman.toString()) }
+                // Empty state: shown when a search yields no matches.
+                if (catalog.isEmpty() && searchQuery.isNotBlank()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 48.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("🔍", fontSize = 48.sp)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "No plants found",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Try a different search term",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                         )
                     }
                 }
+
+                // Render items inline (no LazyColumn). Catalog size is small,
+                // and this avoids nesting a lazy list inside verticalScroll.
+                catalog.forEach { plant ->
+                    CatalogPlantItem(
+                        plant = plant,
+                        onAddClick = { onAddPlantClick(plant.id_tanaman) },
+                        onItemClick = { onPlantClick(plant.id_tanaman.toString()) }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                // Bottom breathing room so the last item clears the FAB
+                // and the navbar comfortably.
+                Spacer(modifier = Modifier.height(100.dp))
             }
+        }
+
+        // FAB anchored bottom-end, matches the original placement.
+        FloatingActionButton(
+            onClick = onAddNewTypeClick,
+            containerColor = PlantifyMediumGreen,
+            contentColor = Color.White,
+            shape = CircleShape,
+            elevation = FloatingActionButtonDefaults.elevation(8.dp),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Add New Plant Type")
         }
     }
 }
@@ -141,8 +187,7 @@ fun CatalogPlantItem(plant: PlantCatalogEntity, onAddClick: () -> Unit, onItemCl
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onItemClick() }
-            .padding(vertical = 8.dp),
+            .clickable { onItemClick() },
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = 4.dp
