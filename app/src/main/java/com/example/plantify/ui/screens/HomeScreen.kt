@@ -74,13 +74,14 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            plants.forEach { plant ->
+            plants.forEach { item ->
+                val plant = item.plant
                 PlantItem(
-                    name = plant.nama_pot ?: "Plant",
+                    name = plant.nama_pot ?: item.speciesName,
                     days = 0,
                     progress = plant.progress_persen / 100f,
                     nextWatering = plant.next_watering ?: "N/A",
-                    imageRes = 0,
+                    imageRes = plantIconRes(item.speciesName),
                     onClick = { onPlantClick(plant.id_kebun.toString()) }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -371,5 +372,25 @@ private fun PlantItem(
 private fun HomeScreenPreview() {
     PlantifyTheme {
         HomeScreen()
+    }
+}
+
+@androidx.annotation.DrawableRes
+private fun plantIconRes(speciesName: String?): Int {
+    val name = speciesName?.lowercase()?.trim().orEmpty()
+    return when {
+        name.isEmpty() -> R.drawable.ic_eco
+        // Chili first so "chili pepper" doesn't get caught by the "pepper" branch.
+        "chili" in name || "chilli" in name || "cabai" in name || "cabe" in name ->
+            R.drawable.ic_plant_red_chili
+        "tomato" in name || "tomat" in name -> R.drawable.ic_plant_tomato
+        "mustard" in name || "sawi" in name -> R.drawable.ic_plant_mustard_greens
+        "spinach" in name || "bayam" in name -> R.drawable.ic_plant_spinach
+        "lettuce" in name || "selada" in name -> R.drawable.ic_plant_lettuce
+        "onion" in name || "bawang" in name -> R.drawable.ic_plant_green_onion
+        "pepper" in name || "paprika" in name -> R.drawable.ic_plant_bell_pepper
+        "cucumber" in name || "timun" in name || "mentimun" in name ->
+            R.drawable.ic_plant_cucumber
+        else -> R.drawable.ic_eco
     }
 }

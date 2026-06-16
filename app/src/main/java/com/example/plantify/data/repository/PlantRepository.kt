@@ -144,4 +144,7 @@ class PlantRepository(
     suspend fun saveSchedules(schedules: List<TaskScheduleEntity>) {
         plantDao.insertSchedules(schedules)
     }
+    suspend fun generatePlantInfo(plantName: String): String? {
+        return aiService.generatePlantInfo(plantName)
+    }
 }

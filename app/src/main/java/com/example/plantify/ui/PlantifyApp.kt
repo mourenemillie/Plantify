@@ -199,8 +199,8 @@ fun PlantifyApp() {
                 val plantId = backStackEntry.arguments?.getString("plantId") ?: ""
                 PlantDetailScreen(
                     plantId = plantId,
-                    onBackClick = { navController.popBackStack() },
-                    onGrowthProgressClick = { navController.navigate(Screen.GrowthProgress.route) }
+                    viewModel = viewModel(factory = viewModelFactory),
+                    onBackClick = { navController.popBackStack() }
                 )
             }
             composable(Screen.GrowthProgress.route) {
